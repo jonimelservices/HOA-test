@@ -141,6 +141,12 @@ export const App = () => {
                     showNotification: showNotification,
                     onNavigate: navigate
                 });
+            case 'reset-password':
+                return React.createElement(ResetPasswordPage, {
+                    theme: activeTheme,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
             case 'dashboard':
                 return React.createElement(DashboardPage, {
                     theme: activeTheme,
