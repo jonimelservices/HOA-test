@@ -1,4 +1,4 @@
-import { supabase } from '../../utils/supabase.js';
+// Access the global Supabase client
 
 const { useState, useEffect } = React;
 
