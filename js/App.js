@@ -5,6 +5,7 @@ import { ScrollToTopButton } from './components/ui/ScrollToTopButton.js';
 import { HomePage } from './components/pages/HomePage.js';
 import { AboutPage } from './components/pages/AboutPage.js';
 import { LoginPage } from './components/pages/LoginPage.js';
+import { ResetPasswordPage } from './components/pages/ResetPasswordPage.js';
 import { DashboardPage } from './components/pages/DashboardPage.js';
 import { themeClasses, initialHoaConfig } from './utils/themes.js';
 // Global supabase client will be accessed directly
