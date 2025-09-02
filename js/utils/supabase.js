@@ -1,9 +1,5 @@
-// Supabase client - will be initialized in index.html
-export let supabase;
-
-export const initSupabase = (client) => {
-    supabase = client;
-};
+// Access the global Supabase client
+export const supabase = window.supabaseClient;
 
 export const triggerNotification = async (type, subject, showNotification) => {
     try {
