@@ -28,7 +28,7 @@ export const ContactForm = ({ theme, showNotification }) => {
         }
         setIsLoading(true);
         try {
-            const { error } = await supabase.functions.invoke('send-contact-email', {
+            const { error } = await window.supabaseClient.functions.invoke('send-contact-email', {
                 body: JSON.stringify(formData)
             });
             if (error) throw error;
