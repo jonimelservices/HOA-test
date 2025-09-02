@@ -24,7 +24,7 @@ export const App = () => {
 
     useEffect(() => {
         const fetchConfig = async () => {
-            const { data, error } = await supabase.from('configuration').select('*').eq('id', 1).single();
+            const { data, error } = await window.supabaseClient.from('configuration').select('*').eq('id', 1).single();
             if (error && error.code === 'PGRST116') {
                 console.warn("Configuration not found in database, using initial config. Please save settings in admin panel to create the record.");
                 setConfig(initialHoaConfig);
@@ -39,10 +39,10 @@ export const App = () => {
         };
         fetchConfig();
 
-        const { data: authListener } = supabase.auth.onAuthStateChange(
+        const { data: authListener } = window.supabaseClient.auth.onAuthStateChange(
             async (event, session) => {
                 if (session?.user) {
-                    const { data: userData, error } = await supabase
+                    const { data: userData, error } = await window.supabaseClient
                         .from('users')
                         .select('*')
                         .eq('id', session.user.id)
@@ -87,7 +87,7 @@ export const App = () => {
 
     const handleLogout = async () => {
         setIsLoading(true);
-        await supabase.auth.signOut();
+        await window.supabaseClient.auth.signOut();
         setUser(null);
         setUserRole(null);
         setCurrentPage('home');
