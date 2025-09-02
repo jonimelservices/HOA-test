@@ -11,7 +11,7 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
     const handleLogin = async () => {
         setIsLoading(true);
         setError('');
-        const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error: authError } = await window.supabaseClient.auth.signInWithPassword({
             email: email,
             password: password,
         });
@@ -21,7 +21,7 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
             showNotification("Login failed: " + authError.message);
             setIsLoading(false);
         } else if (user) {
-            const { data: userData, error: userError } = await supabase
+            const { data: userData, error: userError } = await window.supabaseClient
                 .from('users')
                 .select('*')
                 .eq('id', user.id)
@@ -30,7 +30,7 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
             if (userError || !userData) {
                 setError("Could not retrieve user profile. Please contact support.");
                 showNotification("Login failed: Could not retrieve user profile.");
-                await supabase.auth.signOut();
+                await window.supabaseClient.auth.signOut();
                 setIsLoading(false);
             } else {
                 onLogin(userData);
