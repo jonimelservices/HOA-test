@@ -39,83 +39,130 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
     };
 
     return React.createElement('div', {
-        className: "min-h-screen flex items-center justify-center fade-in p-6"
+        className: "min-h-screen flex items-center justify-center fade-in p-6",
+        style: {
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))'
+        }
     },
         React.createElement('div', {
-            className: "bg-white p-10 rounded-2xl shadow-xl w-full max-w-lg"
+            className: "modern-card p-12 w-full max-w-md"
         }, [
             React.createElement('div', {
                 key: "header",
-                className: "text-center mb-10"
+                className: "text-center mb-12"
             }, [
                 React.createElement('div', {
                     key: "icon",
-                    className: `${theme.bg} inline-block p-4 rounded-full mb-5`
+                    className: "bg-gradient-to-br from-blue-100 to-purple-100 p-6 rounded-3xl inline-block mb-6 shadow-lg"
                 }, React.createElement('i', {
-                    className: "fas fa-lock text-white text-3xl"
+                    className: "fas fa-lock text-4xl gradient-text"
                 })),
                 React.createElement('h1', {
                     key: "title",
-                    className: "text-4xl font-bold text-gray-800"
-                }, "Portal Login")
+                    className: "text-4xl font-black gradient-text mb-3"
+                }, "Member Portal"),
+                React.createElement('p', {
+                    key: "subtitle",
+                    className: "text-gray-600 text-lg"
+                }, "Sign in to access your community resources")
             ]),
-            error && React.createElement('p', {
+            error && React.createElement('div', {
                 key: "error",
-                className: "text-red-500 text-center mb-5 font-semibold text-lg"
-            }, error),
+                className: "modern-card bg-red-50 border border-red-200 p-4 mb-6 text-center"
+            }, React.createElement('p', {
+                className: "text-red-600 font-semibold"
+            }, error)),
             React.createElement('div', {
                 key: "form",
-                className: "space-y-8"
+                className: "space-y-6"
             }, [
                 React.createElement('div', {
-                    key: "email"
+                    key: "email",
+                    className: "space-y-2"
                 }, [
                     React.createElement('label', {
                         key: "email-label",
-                        className: "block text-base font-medium text-gray-700 mb-2"
-                    }, "Email"),
-                    React.createElement('input', {
-                        key: "email-input",
-                        type: "email",
-                        onChange: (e) => setEmail(e.target.value),
-                        className: `w-full px-5 py-4 border rounded-xl text-lg ${theme.ring} ${theme.border}`,
-                        placeholder: "Enter your email"
-                    })
+                        className: "block text-lg font-bold text-gray-700"
+                    }, "Email Address"),
+                    React.createElement('div', {
+                        key: "email-field",
+                        className: "relative"
+                    }, [
+                        React.createElement('input', {
+                            key: "email-input",
+                            type: "email",
+                            onChange: (e) => setEmail(e.target.value),
+                            className: "modern-input w-full text-lg pl-12",
+                            placeholder: "your.email@example.com"
+                        }),
+                        React.createElement('i', {
+                            key: "email-icon",
+                            className: "fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        })
+                    ])
                 ]),
                 React.createElement('div', {
-                    key: "password"
+                    key: "password",
+                    className: "space-y-2"
                 }, [
                     React.createElement('label', {
                         key: "password-label",
-                        className: "block text-base font-medium text-gray-700 mb-2"
+                        className: "block text-lg font-bold text-gray-700"
                     }, "Password"),
-                    React.createElement('input', {
-                        key: "password-input",
-                        type: "password",
-                        onChange: (e) => setPassword(e.target.value),
-                        className: `w-full px-5 py-4 border rounded-xl text-lg ${theme.ring} ${theme.border}`,
-                        placeholder: "Enter your password"
-                    })
+                    React.createElement('div', {
+                        key: "password-field",
+                        className: "relative"
+                    }, [
+                        React.createElement('input', {
+                            key: "password-input",
+                            type: "password",
+                            onChange: (e) => setPassword(e.target.value),
+                            className: "modern-input w-full text-lg pl-12",
+                            placeholder: "Enter your password"
+                        }),
+                        React.createElement('i', {
+                            key: "password-icon",
+                            className: "fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        })
+                    ])
                 ])
             ]),
             React.createElement('div', {
                 key: "forgot",
-                className: "mt-4 text-right"
+                className: "mt-6 text-right"
             }, React.createElement('a', {
                 href: "#",
                 onClick: (e) => { e.preventDefault(); onNavigate('reset-password'); },
-                className: `text-sm ${theme.text} hover:underline font-semibold`
+                className: "text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200"
             }, "Forgot Password?")),
             React.createElement('div', {
                 key: "submit",
-                className: "mt-6"
+                className: "mt-8"
             }, React.createElement('button', {
                 onClick: handleLogin,
                 disabled: isLoading,
-                className: `w-full ${theme.bg} text-white font-bold py-4 px-5 rounded-xl text-lg ${theme.hoverBg} transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:bg-gray-400`
+                className: "w-full modern-button text-white font-bold py-4 px-6 text-xl rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             }, isLoading ? React.createElement('div', {
-                className: "loader mx-auto h-6 w-6"
-            }) : 'Login'))
+                className: "flex items-center justify-center gap-3"
+            }, [
+                React.createElement('div', {
+                    key: "loader",
+                    className: "loader h-6 w-6"
+                }),
+                React.createElement('span', {
+                    key: "loading-text"
+                }, "Signing in...")
+            ]) : React.createElement('div', {
+                className: "flex items-center justify-center gap-3"
+            }, [
+                React.createElement('span', {
+                    key: "login-text"
+                }, "Sign In"),
+                React.createElement('i', {
+                    key: "login-icon",
+                    className: "fas fa-sign-in-alt"
+                })
+            ])))
         ])
     );
 };
