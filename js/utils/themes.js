@@ -1,11 +1,79 @@
 export const themeClasses = {
-    blue: { name: 'Blue', bg: 'bg-blue-600', hoverBg: 'hover:bg-blue-700', text: 'text-blue-600', hoverText: 'hover:text-blue-600', border: 'focus:border-blue-500', ring: 'focus:ring-blue-500', iconBg: 'bg-blue-100', iconText: 'text-blue-600' },
-    green: { name: 'Green', bg: 'bg-green-600', hoverBg: 'hover:bg-green-700', text: 'text-green-600', hoverText: 'hover:text-green-600', border: 'focus:border-green-500', ring: 'focus:ring-green-500', iconBg: 'bg-green-100', iconText: 'text-green-600' },
-    teal: { name: 'Teal', bg: 'bg-teal-600', hoverBg: 'hover:bg-teal-700', text: 'text-teal-600', hoverText: 'hover:text-teal-600', border: 'focus:border-teal-500', ring: 'focus:ring-teal-500', iconBg: 'bg-teal-100', iconText: 'text-teal-600' },
-    indigo: { name: 'Indigo', bg: 'bg-indigo-600', hoverBg: 'hover:bg-indigo-700', text: 'text-indigo-600', hoverText: 'hover:text-indigo-600', border: 'focus:border-indigo-500', ring: 'focus:ring-indigo-500', iconBg: 'bg-indigo-100', iconText: 'text-indigo-600' },
-    purple: { name: 'Purple', bg: 'bg-purple-600', hoverBg: 'hover:bg-purple-700', text: 'text-purple-600', hoverText: 'hover:text-purple-600', border: 'focus:border-purple-500', ring: 'focus:ring-purple-500', iconBg: 'bg-purple-100', iconText: 'text-purple-600' },
-    red: { bg: 'bg-red-500', hoverBg: 'hover:bg-red-600' },
-    gray: { bg: 'bg-gray-500', hoverBg: 'hover:bg-gray-600' }
+    blue: {
+        name: 'Ocean Blue',
+        bg: 'modern-button',
+        hoverBg: 'modern-button',
+        text: 'gradient-text',
+        hoverText: 'gradient-text',
+        border: 'focus:border-blue-500',
+        ring: 'focus:ring-blue-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-blue-100 to-blue-200',
+        iconText: 'text-blue-700',
+        gradient: 'bg-gradient-to-r from-blue-500 to-purple-600',
+        cardBg: 'modern-card'
+    },
+    green: {
+        name: 'Emerald',
+        bg: 'bg-gradient-to-r from-emerald-500 to-teal-600',
+        hoverBg: 'hover:from-emerald-600 hover:to-teal-700',
+        text: 'text-emerald-600',
+        hoverText: 'hover:text-emerald-700',
+        border: 'focus:border-emerald-500',
+        ring: 'focus:ring-emerald-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-emerald-100 to-teal-200',
+        iconText: 'text-emerald-700',
+        gradient: 'bg-gradient-to-r from-emerald-500 to-teal-600',
+        cardBg: 'modern-card'
+    },
+    teal: {
+        name: 'Teal Wave',
+        bg: 'bg-gradient-to-r from-teal-500 to-cyan-600',
+        hoverBg: 'hover:from-teal-600 hover:to-cyan-700',
+        text: 'text-teal-600',
+        hoverText: 'hover:text-teal-700',
+        border: 'focus:border-teal-500',
+        ring: 'focus:ring-teal-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-teal-100 to-cyan-200',
+        iconText: 'text-teal-700',
+        gradient: 'bg-gradient-to-r from-teal-500 to-cyan-600',
+        cardBg: 'modern-card'
+    },
+    indigo: {
+        name: 'Deep Purple',
+        bg: 'bg-gradient-to-r from-indigo-500 to-purple-600',
+        hoverBg: 'hover:from-indigo-600 hover:to-purple-700',
+        text: 'text-indigo-600',
+        hoverText: 'hover:text-indigo-700',
+        border: 'focus:border-indigo-500',
+        ring: 'focus:ring-indigo-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-indigo-100 to-purple-200',
+        iconText: 'text-indigo-700',
+        gradient: 'bg-gradient-to-r from-indigo-500 to-purple-600',
+        cardBg: 'modern-card'
+    },
+    purple: {
+        name: 'Violet Dream',
+        bg: 'bg-gradient-to-r from-purple-500 to-pink-600',
+        hoverBg: 'hover:from-purple-600 hover:to-pink-700',
+        text: 'text-purple-600',
+        hoverText: 'hover:text-purple-700',
+        border: 'focus:border-purple-500',
+        ring: 'focus:ring-purple-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-purple-100 to-pink-200',
+        iconText: 'text-purple-700',
+        gradient: 'bg-gradient-to-r from-purple-500 to-pink-600',
+        cardBg: 'modern-card'
+    },
+    red: {
+        bg: 'bg-gradient-to-r from-red-500 to-rose-600',
+        hoverBg: 'hover:from-red-600 hover:to-rose-700',
+        gradient: 'bg-gradient-to-r from-red-500 to-rose-600'
+    },
+    gray: {
+        bg: 'bg-gradient-to-r from-gray-500 to-slate-600',
+        hoverBg: 'hover:from-gray-600 hover:to-slate-700',
+        gradient: 'bg-gradient-to-r from-gray-500 to-slate-600'
+    }
 };
 
 export const initialHoaConfig = {
