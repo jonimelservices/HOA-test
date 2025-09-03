@@ -157,6 +157,39 @@ export const App = () => {
                     onNavigate: navigate,
                     userRole: userRole
                 });
+            case 'documents':
+                return React.createElement(DocumentsPage, {
+                    theme: activeTheme,
+                    user: user,
+                    userRole: userRole,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
+            case 'calendar':
+                return React.createElement(CalendarPage, {
+                    theme: activeTheme,
+                    userRole: userRole,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
+            case 'account':
+                return React.createElement(AccountPage, {
+                    theme: activeTheme,
+                    user: user,
+                    setUser: setUser,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
+            case 'admin':
+                return React.createElement(AdminPage, {
+                    config: config,
+                    setConfig: setConfig,
+                    theme: activeTheme,
+                    themeName: themeName,
+                    setThemeName: setThemeName,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
             default:
                 return React.createElement(HomePage, {
                     config: config,
