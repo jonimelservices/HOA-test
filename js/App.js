@@ -7,6 +7,10 @@ import { AboutPage } from './components/pages/AboutPage.js';
 import { LoginPage } from './components/pages/LoginPage.js';
 import { ResetPasswordPage } from './components/pages/ResetPasswordPage.js';
 import { DashboardPage } from './components/pages/DashboardPage.js';
+import { DocumentsPage } from './components/pages/DocumentsPage.js';
+import { CalendarPage } from './components/pages/CalendarPage.js';
+import { AccountPage } from './components/pages/AccountPage.js';
+import { AdminPage } from './components/pages/AdminPage.js';
 import { themeClasses, initialHoaConfig } from './utils/themes.js';
 // Global supabase client will be accessed directly
 
