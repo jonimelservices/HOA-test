@@ -6,25 +6,64 @@ export const HomePage = ({ config, theme, onNavigate, showNotification }) => {
     }, [
         React.createElement('section', {
             key: "hero",
-            className: "relative text-white text-center py-32 px-6 bg-cover bg-center",
-            style: { backgroundImage: `url('${config.heroImageUrl}')` }
+            className: "relative text-white text-center py-40 px-6 overflow-hidden",
+            style: {
+                backgroundImage: `linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.8)), url('${config.heroImageUrl}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed'
+            }
         }, [
             React.createElement('div', {
-                key: "overlay",
-                className: "absolute inset-0 bg-black bg-opacity-60"
-            }),
+                key: "floating-elements",
+                className: "absolute inset-0 overflow-hidden pointer-events-none"
+            }, [
+                React.createElement('div', {
+                    key: "circle1",
+                    className: "absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"
+                }),
+                React.createElement('div', {
+                    key: "circle2",
+                    className: "absolute bottom-32 right-32 w-24 h-24 bg-purple-300/20 rounded-full blur-lg"
+                }),
+                React.createElement('div', {
+                    key: "circle3",
+                    className: "absolute top-1/2 left-1/4 w-16 h-16 bg-blue-300/30 rounded-full blur-md"
+                })
+            ]),
             React.createElement('div', {
                 key: "content",
-                className: "relative z-10"
+                className: "relative z-10 max-w-5xl mx-auto"
             }, [
                 React.createElement('h1', {
                     key: "title",
-                    className: "text-5xl md:text-7xl font-extrabold mb-5 drop-shadow-lg"
-                }, `Welcome to ${config.hoaName}`),
+                    className: "text-6xl md:text-8xl font-black mb-8 leading-tight"
+                }, [
+                    "Welcome to ",
+                    React.createElement('span', {
+                        key: "name",
+                        className: "bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent"
+                    }, config.hoaName)
+                ]),
                 React.createElement('p', {
                     key: "subtitle",
-                    className: "text-xl md:text-2xl max-w-4xl mx-auto drop-shadow-md"
-                }, "Your source for official HOA information, documents, and news.")
+                    className: "text-2xl md:text-3xl max-w-4xl mx-auto leading-relaxed font-light mb-12 text-blue-50"
+                }, "Your modern, digital gateway to community information, documents, and seamless member services."),
+                React.createElement('div', {
+                    key: "cta-buttons",
+                    className: "flex flex-col sm:flex-row gap-6 justify-center items-center"
+                }, [
+                    React.createElement('button', {
+                        key: "explore",
+                        onClick: () => onNavigate('about'),
+                        className: "modern-button px-12 py-4 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-105"
+                    }, "Explore Community"),
+                    React.createElement('button', {
+                        key: "member-login",
+                        onClick: () => onNavigate('login'),
+                        className: "bg-white/20 backdrop-blur-md border border-white/30 text-white px-12 py-4 text-xl font-bold rounded-2xl hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-2"
+                    }, "Member Portal")
+                ])
             ])
         ]),
         React.createElement('section', {
