@@ -39,7 +39,7 @@ export const HomePage = ({ config, theme, onNavigate, showNotification }) => {
                     key: "title",
                     className: "text-6xl md:text-8xl font-black mb-8 leading-tight"
                 }, [
-                    "Welcome to ",
+                    React.createElement('span', { key: "welcome-text" }, "Welcome to "),
                     React.createElement('span', {
                         key: "name",
                         className: "bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent"
@@ -150,8 +150,9 @@ export const HomePage = ({ config, theme, onNavigate, showNotification }) => {
                                     key: "portal-arrow",
                                     className: "mt-4 inline-flex items-center text-blue-600 font-semibold group-hover:translate-x-2 transition-transform duration-300"
                                 }, [
-                                    "Access Now ",
+                                    React.createElement('span', { key: "label" }, "Access Now"),
                                     React.createElement('i', {
+                                        key: "icon",
                                         className: "fas fa-arrow-right ml-2"
                                     })
                                 ])
@@ -189,8 +190,9 @@ export const HomePage = ({ config, theme, onNavigate, showNotification }) => {
                                     key: "about-arrow",
                                     className: "mt-4 inline-flex items-center text-green-600 font-semibold group-hover:translate-x-2 transition-transform duration-300"
                                 }, [
-                                    "Learn More ",
+                                    React.createElement('span', { key: "label" }, "Learn More"),
                                     React.createElement('i', {
+                                        key: "icon",
                                         className: "fas fa-arrow-right ml-2"
                                     })
                                 ])
