@@ -12,12 +12,19 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     const fetchDocuments = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await window.supabaseClient.from('documents').select('*').order('lastUpdated', { ascending: false });
+            const { data, error } = await window.supabaseClient.from('documents').select('*');
             if (error) {
                 console.error("Error fetching documents:", error);
                 showNotification("Error fetching documents.");
+                setDocuments([]);
             } else {
-                setDocuments(data || []);
+                const items = Array.isArray(data) ? data : [];
+                const sorted = items.sort((a, b) => {
+                    const ad = new Date(a.lastUpdated || a.updated_at || a.created_at || 0).getTime();
+                    const bd = new Date(b.lastUpdated || b.updated_at || b.created_at || 0).getTime();
+                    return bd - ad;
+                });
+                setDocuments(sorted);
             }
         } catch (error) {
             console.error("Error:", error);
@@ -31,17 +38,17 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     }, []);
 
     const categories = ['All', ...new Set(documents.map(doc => doc.category))];
-    const filteredDocuments = documents.filter(doc => 
-        (filterCategory === 'All' || doc.category === filterCategory) && 
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
-        (doc.lastUpdated || '').includes(dateFilter)
+    const filteredDocuments = documents.filter(doc =>
+        (filterCategory === 'All' || doc.category === filterCategory) &&
+        (doc.name || doc.title || '').toLowerCase().includes(searchTerm.toLowerCase()) &&
+        ((doc.lastUpdated || doc.updated_at || doc.created_at || '') + '').includes(dateFilter)
     );
 
     const handleDocumentAccess = (doc) => {
         if (user) {
             logAccess(user, doc.name);
         }
-        window.open(doc.url, '_blank');
+        window.open(doc.url || doc.file_url || '#', '_blank');
     };
 
     return React.createElement('div', {
@@ -217,11 +224,11 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                                     React.createElement('div', {
                                         key: "name-content",
                                         className: "text-sm font-semibold text-gray-900"
-                                    }, doc.name),
+                                    }, doc.name || doc.title),
                                     React.createElement('div', {
                                         key: "size",
                                         className: "text-sm text-gray-500"
-                                    }, doc.size)
+                                    }, doc.size || '')
                                 ]),
                                 React.createElement('td', {
                                     key: "category",
@@ -236,7 +243,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                                 React.createElement('td', {
                                     key: "date",
                                     className: "px-6 py-4 text-sm text-gray-500"
-                                }, doc.lastUpdated ? new Date(doc.lastUpdated).toLocaleDateString() : 'N/A'),
+                                }, (doc.lastUpdated || doc.updated_at || doc.created_at) ? new Date(doc.lastUpdated || doc.updated_at || doc.created_at).toLocaleDateString() : 'N/A'),
                                 React.createElement('td', {
                                     key: "actions",
                                     className: "px-6 py-4"
