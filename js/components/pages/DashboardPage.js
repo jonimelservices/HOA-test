@@ -42,8 +42,9 @@ export const DashboardPage = ({ theme, onNavigate, userRole }) => {
                     key: "arrow",
                     className: "mt-4 inline-flex items-center text-blue-600 font-semibold group-hover:translate-x-2 transition-transform duration-300"
                 }, [
-                    "View Documents ",
+                    React.createElement('span', { key: "label" }, "View Documents"),
                     React.createElement('i', {
+                        key: "icon",
                         className: "fas fa-arrow-right ml-2"
                     })
                 ])
@@ -71,8 +72,9 @@ export const DashboardPage = ({ theme, onNavigate, userRole }) => {
                     key: "arrow",
                     className: "mt-4 inline-flex items-center text-green-600 font-semibold group-hover:translate-x-2 transition-transform duration-300"
                 }, [
-                    "View Calendar ",
+                    React.createElement('span', { key: "label" }, "View Calendar"),
                     React.createElement('i', {
+                        key: "icon",
                         className: "fas fa-arrow-right ml-2"
                     })
                 ])
@@ -100,8 +102,9 @@ export const DashboardPage = ({ theme, onNavigate, userRole }) => {
                     key: "arrow",
                     className: "mt-4 inline-flex items-center text-purple-600 font-semibold group-hover:translate-x-2 transition-transform duration-300"
                 }, [
-                    "Manage Account ",
+                    React.createElement('span', { key: "label" }, "Manage Account"),
                     React.createElement('i', {
+                        key: "icon",
                         className: "fas fa-arrow-right ml-2"
                     })
                 ])
@@ -129,8 +132,9 @@ export const DashboardPage = ({ theme, onNavigate, userRole }) => {
                     key: "arrow",
                     className: "mt-4 inline-flex items-center text-orange-600 font-semibold group-hover:translate-x-2 transition-transform duration-300"
                 }, [
-                    "Admin Controls ",
+                    React.createElement('span', { key: "label" }, "Admin Controls"),
                     React.createElement('i', {
+                        key: "icon",
                         className: "fas fa-arrow-right ml-2"
                     })
                 ])
