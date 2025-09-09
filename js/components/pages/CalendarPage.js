@@ -7,12 +7,24 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
     const fetchEvents = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await window.supabaseClient.from('events').select('*').order('date', { ascending: true });
+            const { data, error } = await window.supabaseClient.from('events').select('*');
             if (error) {
                 console.error("Error fetching events:", error);
                 showNotification("Error fetching events.");
+                setEvents([]);
             } else {
-                setEvents(data || []);
+                const items = Array.isArray(data) ? data : [];
+                const normalized = items.map(e => ({
+                    ...e,
+                    date: e.date || e.event_date || e.scheduled_at || e.start_date || e.start_at || null,
+                    time: e.time || e.start_time || e.starts_at || ''
+                }));
+                const sorted = normalized.sort((a, b) => {
+                    const ad = new Date((a.date || 0).toString().replace(/-/g, '/')).getTime();
+                    const bd = new Date((b.date || 0).toString().replace(/-/g, '/')).getTime();
+                    return ad - bd;
+                });
+                setEvents(sorted);
             }
         } catch (error) {
             console.error("Error:", error);
