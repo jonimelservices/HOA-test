@@ -1,6 +1,7 @@
 import { logAccess } from '../../utils/supabase.js';
 
 const { useState, useEffect } = React;
+import { logAccess } from '../../utils/supabase.js';
 
 export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavigate }) => {
     const [documents, setDocuments] = useState([]);
@@ -35,6 +36,15 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
 
     useEffect(() => {
         fetchDocuments();
+        const channel = window.supabaseClient
+            .channel('documents-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => {
+                fetchDocuments();
+            })
+            .subscribe();
+        return () => {
+            try { window.supabaseClient.removeChannel(channel); } catch (e) {}
+        };
     }, []);
 
     const categories = ['All', ...new Set(documents.map(doc => doc.category))];
@@ -71,16 +81,26 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                     className: "text-xl text-gray-600"
                 }, "Access community documents, bylaws, and records")
             ]),
-            React.createElement('button', {
-                key: "back-btn",
-                onClick: () => onNavigate('dashboard'),
-                className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            }, [
-                React.createElement('i', {
-                    key: "icon",
-                    className: "fas fa-arrow-left mr-2"
-                }),
-                "Back to Dashboard"
+            React.createElement('div', { key: 'header-actions', className: 'flex items-center gap-3' }, [
+                React.createElement('button', {
+                    key: "back-btn",
+                    onClick: () => onNavigate('dashboard'),
+                    className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                }, [
+                    React.createElement('i', {
+                        key: "icon",
+                        className: "fas fa-arrow-left mr-2"
+                    }),
+                    "Back to Dashboard"
+                ]),
+                React.createElement('button', {
+                    key: 'refresh-btn',
+                    onClick: fetchDocuments,
+                    className: 'bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-all duration-300'
+                }, [
+                    React.createElement('i', { key: 'ri', className: 'fas fa-sync mr-2' }),
+                    'Refresh'
+                ])
             ])
         ]),
         
