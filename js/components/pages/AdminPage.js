@@ -1,6 +1,6 @@
 import { themeClasses } from '../../utils/themes.js';
 
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, showNotification, onNavigate }) => {
     const [localConfig, setLocalConfig] = useState(config || {});
@@ -11,6 +11,8 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const [showUserForm, setShowUserForm] = useState(false);
     const [editingUserId, setEditingUserId] = useState(null);
     const [userForm, setUserForm] = useState({ id: '', first_name: '', last_name: '', address: '', phone: '', email: '', role: 'member' });
+    const [isBulkUploading, setIsBulkUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     const handleConfigChange = (e) => {
         const { name, value } = e.target;
