@@ -539,6 +539,12 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     tabName: "theme",
                     label: "Theme",
                     icon: "fa-palette"
+                }),
+                React.createElement(TabButton, {
+                    key: "user-tab",
+                    tabName: "user",
+                    label: "User",
+                    icon: "fa-users"
                 })
             ])),
             React.createElement('div', {
