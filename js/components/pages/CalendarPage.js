@@ -71,6 +71,67 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
     const upcomingEvents = events.filter(event => isUpcoming(event.date));
     const pastEvents = events.filter(event => !isUpcoming(event.date));
 
+    const handleEventInputChange = (e) => {
+        const { name, value, files } = e.target;
+        if (name === 'attachment') {
+            setEventForm(prev => ({ ...prev, attachment: files && files[0] ? files[0] : null }));
+        } else {
+            setEventForm(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const saveEvent = async () => {
+        if (!eventForm.title || !eventForm.date) {
+            showNotification('Please provide a title and date.');
+            return;
+        }
+        setIsEventSaving(true);
+        try {
+            let attachment_url = null;
+            if (eventForm.attachment) {
+                const bucket = 'event-attachments';
+                const unique = `${Date.now()}_${eventForm.attachment.name}`;
+                const { error: upErr } = await window.supabaseClient.storage.from(bucket).upload(unique, eventForm.attachment);
+                if (upErr) throw upErr;
+                const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
+                attachment_url = pub?.publicUrl || null;
+            }
+            const ins = await window.supabaseClient.from('events').insert({
+                title: eventForm.title,
+                date: eventForm.date,
+                time: eventForm.time || null,
+                location: eventForm.location || null,
+                attachment_url
+            });
+            if (ins.error) throw ins.error;
+            showNotification('Event added.');
+            setShowEventForm(false);
+            setEventForm({ title: '', date: '', time: '', location: '', attachment: null });
+            fetchEvents();
+        } catch (e) {
+            console.error('Add event error:', e);
+            showNotification('Failed to add event.');
+        } finally {
+            setIsEventSaving(false);
+        }
+    };
+
+    const deleteEvent = async (eventRow) => {
+        try {
+            const m = (eventRow.attachment_url || '').match(/\/object\/public\/([^/]+)\/(.+)$/);
+            if (m) {
+                try { await window.supabaseClient.storage.from(m[1]).remove([m[2]]); } catch (_) {}
+            }
+            const { error } = await window.supabaseClient.from('events').delete().eq('id', eventRow.id);
+            if (error) throw error;
+            showNotification('Event deleted.');
+            fetchEvents();
+        } catch (e) {
+            console.error('Delete event error:', e);
+            showNotification('Failed to delete event.');
+        }
+    };
+
     return React.createElement('div', {
         className: "container mx-auto px-8 py-16 fade-in"
     }, [
