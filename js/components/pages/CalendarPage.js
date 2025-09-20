@@ -3,6 +3,9 @@ const { useState, useEffect } = React;
 export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) => {
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showEventForm, setShowEventForm] = useState(false);
+    const [isEventSaving, setIsEventSaving] = useState(false);
+    const [eventForm, setEventForm] = useState({ title: '', date: '', time: '', location: '', attachment: null });
 
     const fetchEvents = async () => {
         setIsLoading(true);
