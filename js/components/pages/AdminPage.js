@@ -105,6 +105,102 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
             label
         ]);
 
+    const fetchReadOnlyUsers = async () => {
+        setIsUsersLoading(true);
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('users')
+                .select('id, email, role, full_name, first_name, last_name, address, phone')
+                .neq('role', 'admin');
+            if (error) {
+                console.error('Error loading users:', error);
+                setUserRows([]);
+                showNotification('Could not load users. Check RLS/policies.');
+            } else {
+                const rows = (data || []).map(u => ({
+                    id: u.id,
+                    email: u.email || '',
+                    role: u.role || 'member',
+                    first_name: u.first_name || (u.full_name ? (u.full_name.split(' ')[0] || '') : ''),
+                    last_name: u.last_name || (u.full_name ? (u.full_name.split(' ').slice(1).join(' ') || '') : ''),
+                    address: u.address || '',
+                    phone: u.phone || ''
+                }));
+                setUserRows(rows);
+            }
+        } catch (e) {
+            console.error(e);
+            setUserRows([]);
+        }
+        setIsUsersLoading(false);
+    };
+
+    useEffect(() => {
+        if (activeTab === 'user') fetchReadOnlyUsers();
+    }, [activeTab]);
+
+    const openAddUser = () => {
+        setEditingUserId(null);
+        setUserForm({ id: '', first_name: '', last_name: '', address: '', phone: '', email: '', role: 'member' });
+        setShowUserForm(true);
+    };
+
+    const openEditUser = (row) => {
+        setEditingUserId(row.id);
+        setUserForm({ id: row.id, first_name: row.first_name, last_name: row.last_name, address: row.address, phone: row.phone, email: row.email, role: row.role || 'member' });
+        setShowUserForm(true);
+    };
+
+    const handleUserFormChange = (e) => {
+        const { name, value } = e.target;
+        setUserForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const saveUser = async () => {
+        const payload = {
+            email: userForm.email || null,
+            full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim() || null,
+            first_name: userForm.first_name || null,
+            last_name: userForm.last_name || null,
+            address: userForm.address || null,
+            phone: userForm.phone || null,
+            role: userForm.role || 'member'
+        };
+        try {
+            if (editingUserId) {
+                const { error } = await window.supabaseClient.from('users').update(payload).eq('id', editingUserId);
+                if (error) throw error;
+                showNotification('User updated.');
+            } else {
+                if (!userForm.id) {
+                    showNotification('User ID is required. Create user in Auth first, then paste their UUID here.');
+                    return;
+                }
+                const insertPayload = { id: userForm.id, ...payload };
+                const { error } = await window.supabaseClient.from('users').insert(insertPayload);
+                if (error) throw error;
+                showNotification('User added.');
+            }
+            setShowUserForm(false);
+            fetchReadOnlyUsers();
+        } catch (err) {
+            console.error('Save user error:', err);
+            showNotification('Failed to save user. Ensure columns/policies exist.');
+        }
+    };
+
+    const deleteUser = async (row) => {
+        try {
+            const { error } = await window.supabaseClient.from('users').delete().eq('id', row.id);
+            if (error) throw error;
+            showNotification('User removed from profiles.');
+            fetchReadOnlyUsers();
+        } catch (err) {
+            console.error('Delete user error:', err);
+            showNotification('Failed to delete user.');
+        }
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'general':
