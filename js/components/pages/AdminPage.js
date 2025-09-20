@@ -430,10 +430,18 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                             React.createElement('h3', { key: 'title', className: 'text-2xl font-black text-gray-800 mb-1' }, 'Users'),
                             React.createElement('p', { key: 'desc', className: 'text-gray-600' }, 'Manage users with view-only access.')
                         ]),
-                        React.createElement('button', { key: 'add-btn', onClick: openAddUser, className: 'modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1' }, [
-                            React.createElement('i', { key: 'icon', className: 'fas fa-user-plus mr-2' }),
-                            'Add User'
-                        ])
+                        React.createElement('div', { key: 'actions', className: 'flex items-center gap-3' }, [
+                            React.createElement('button', { key: 'add-btn', onClick: openAddUser, className: 'modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1' }, [
+                                React.createElement('i', { key: 'icon', className: 'fas fa-user-plus mr-2' }),
+                                'Add User'
+                            ]),
+                            React.createElement('button', { key: 'bulk-btn', onClick: handleBulkUploadClick, disabled: isBulkUploading, className: 'bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-all duration-300 disabled:opacity-50' }, [
+                                React.createElement('i', { key: 'bi', className: 'fas fa-file-upload mr-2' }),
+                                isBulkUploading ? 'Uploading...' : 'Bulk Upload (CSV)'
+                            ]),
+                            React.createElement('a', { key: 'example', href: './example-users.csv', download: 'example-users.csv', className: 'text-blue-600 hover:text-blue-800 font-semibold' }, 'Example CSV')
+                        ]),
+                        React.createElement('input', { key: 'csv-input', ref: fileInputRef, type: 'file', accept: '.csv', onChange: handleCSVChange, style: { display: 'none' } })
                     ]),
 
                     React.createElement('div', { key: 'list-card', className: 'modern-card overflow-hidden' }, [
