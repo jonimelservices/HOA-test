@@ -384,36 +384,41 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                         return React.createElement('div', {
                             key: event.id || index,
                             className: "modern-card p-6 opacity-75 hover:opacity-90 transition-opacity duration-300"
-                        }, React.createElement('div', {
-                            className: "flex items-center gap-4"
                         }, [
                             React.createElement('div', {
-                                key: "past-date",
-                                className: "text-center bg-gray-100 p-3 rounded-xl min-w-[80px]"
+                                className: "flex items-center gap-4"
                             }, [
-                                React.createElement('p', {
-                                    key: "past-month",
-                                    className: "text-gray-600 font-bold text-sm"
-                                }, dateInfo.month),
-                                React.createElement('p', {
-                                    key: "past-day",
-                                    className: "text-gray-800 font-black text-xl"
-                                }, dateInfo.day)
+                                React.createElement('div', {
+                                    key: "past-date",
+                                    className: "text-center bg-gray-100 p-3 rounded-xl min-w-[80px]"
+                                }, [
+                                    React.createElement('p', {
+                                        key: "past-month",
+                                        className: "text-gray-600 font-bold text-sm"
+                                    }, dateInfo.month),
+                                    React.createElement('p', {
+                                        key: "past-day",
+                                        className: "text-gray-800 font-black text-xl"
+                                    }, dateInfo.day)
+                                ]),
+                                React.createElement('div', {
+                                    key: "past-details",
+                                    className: "flex-1"
+                                }, [
+                                    React.createElement('h4', {
+                                        key: "past-title",
+                                        className: "font-bold text-lg text-gray-700"
+                                    }, event.title),
+                                    React.createElement('p', {
+                                        key: "past-time",
+                                        className: "text-gray-500 text-sm"
+                                    }, `${event.time} • ${event.location}`)
+                                ])
                             ]),
-                            React.createElement('div', {
-                                key: "past-details",
-                                className: "flex-1"
-                            }, [
-                                React.createElement('h4', {
-                                    key: "past-title",
-                                    className: "font-bold text-lg text-gray-700"
-                                }, event.title),
-                                React.createElement('p', {
-                                    key: "past-time",
-                                    className: "text-gray-500 text-sm"
-                                }, `${event.time} • ${event.location}`)
+                            userRole === 'admin' && React.createElement('div', { key: 'padmin', className: 'mt-2' }, [
+                                React.createElement('button', { key: 'pdel', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'pi', className: 'fas fa-trash mr-1' }), 'Delete'])
                             ])
-                        ]));
+                        ]);
                     }))
                 ])
             ])
