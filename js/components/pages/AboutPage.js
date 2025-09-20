@@ -1,4 +1,4 @@
-export const AboutPage = ({ config, theme }) => {
+export const AboutPage = ({ config, theme, userRole }) => {
     return React.createElement('div', {
         className: "container mx-auto px-8 py-24 fade-in"
     }, [
@@ -157,7 +157,7 @@ export const AboutPage = ({ config, theme }) => {
             ])
         ]),
 
-        React.createElement('div', {
+        userRole && React.createElement('div', {
             key: "board-section",
             className: "modern-card p-12 stagger-fade-in"
         }, [
