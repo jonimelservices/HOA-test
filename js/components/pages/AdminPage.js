@@ -186,15 +186,22 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                 }
                 showNotification('User updated.');
             } else {
-                if (!userForm.id) {
-                    showNotification('User ID is required. Create user in Auth first, then paste their UUID here.');
-                    return;
-                }
-                let { error } = await window.supabaseClient.from('users').insert({ id: userForm.id, ...payloadFull });
+                let { error } = await window.supabaseClient.from('users').insert(payloadFull);
                 if (error) {
                     if ((error.code === '42703') || /column .* does not exist/i.test(error.message || '')) {
-                        const res2 = await window.supabaseClient.from('users').insert({ id: userForm.id, ...payloadMinimal });
+                        const res2 = await window.supabaseClient.from('users').insert(payloadMinimal);
                         if (res2.error) throw res2.error;
+                    } else if ((error.code === '23505') || /duplicate key/i.test(error.message || '')) {
+                        const upd = await window.supabaseClient.from('users').update(payloadFull).eq('email', userForm.email);
+                        if (upd.error) throw upd.error;
+                    } else if ((error.code === '23503') || /foreign key/i.test(error.message || '')) {
+                        const { data: existing } = await window.supabaseClient.from('users').select('id').eq('email', userForm.email).maybeSingle();
+                        if (existing?.id) {
+                            const upd = await window.supabaseClient.from('users').update(payloadFull).eq('id', existing.id);
+                            if (upd.error) throw upd.error;
+                        } else {
+                            throw error;
+                        }
                     } else {
                         throw error;
                     }
