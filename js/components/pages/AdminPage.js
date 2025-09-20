@@ -148,7 +148,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
 
     const openEditUser = (row) => {
         setEditingUserId(row.id);
-        setUserForm({ id: row.id, first_name: row.first_name, last_name: row.last_name, address: row.address, phone: row.phone, email: row.email, role: row.role || 'member' });
+        setUserForm({ first_name: row.first_name, last_name: row.last_name, address: row.address, phone: row.phone, email: row.email, role: row.role || 'member' });
         setShowUserForm(true);
     };
 
