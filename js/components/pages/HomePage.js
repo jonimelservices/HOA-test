@@ -48,7 +48,7 @@ export const HomePage = ({ config, theme, onNavigate, showNotification }) => {
                 React.createElement('p', {
                     key: "subtitle",
                     className: "text-2xl md:text-3xl max-w-4xl mx-auto leading-relaxed font-light mb-12 text-blue-50"
-                }, "Your modern, digital gateway to community information, documents, and seamless member services."),
+                }, "Your modern, digital gateway to your community information."),
                 React.createElement('div', {
                     key: "cta-buttons",
                     className: "flex flex-col sm:flex-row gap-6 justify-center items-center"
