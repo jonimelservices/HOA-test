@@ -1,6 +1,7 @@
 import { logAccess } from '../../utils/supabase.js';
 
 const { useState, useEffect } = React;
+import { logAccess } from '../../utils/supabase.js';
 
 export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavigate }) => {
     const [documents, setDocuments] = useState([]);
@@ -8,6 +9,9 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
     const [dateFilter, setDateFilter] = useState('');
+    const [showDocForm, setShowDocForm] = useState(false);
+    const [docForm, setDocForm] = useState({ name: '', category: '', file: null });
+    const [isDocSaving, setIsDocSaving] = useState(false);
 
     const fetchDocuments = async () => {
         setIsLoading(true);
@@ -60,6 +64,65 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
         window.open(doc.url || doc.file_url || '#', '_blank');
     };
 
+    const handleDocInputChange = (e) => {
+        const { name, value, files } = e.target;
+        if (name === 'file') {
+            setDocForm(prev => ({ ...prev, file: files && files[0] ? files[0] : null }));
+        } else {
+            setDocForm(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const saveDocument = async () => {
+        if (!docForm.name || !docForm.file) {
+            showNotification('Please provide a name and select a file.');
+            return;
+        }
+        setIsDocSaving(true);
+        try {
+            const bucket = 'hoa-documents';
+            const unique = `${Date.now()}_${docForm.file.name}`;
+            const { error: upErr } = await window.supabaseClient.storage.from(bucket).upload(unique, docForm.file);
+            if (upErr) throw upErr;
+            const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
+            const url = pub?.publicUrl || '';
+            const sizeLabel = `${docForm.file.size} bytes`;
+            const ins = await window.supabaseClient.from('documents').insert({
+                name: docForm.name,
+                category: docForm.category || null,
+                url,
+                size: sizeLabel,
+                lastUpdated: new Date().toISOString()
+            });
+            if (ins.error) throw ins.error;
+            showNotification('Document added.');
+            setShowDocForm(false);
+            setDocForm({ name: '', category: '', file: null });
+            fetchDocuments();
+        } catch (e) {
+            console.error('Add document error:', e);
+            showNotification('Failed to add document.');
+        } finally {
+            setIsDocSaving(false);
+        }
+    };
+
+    const deleteDocument = async (doc) => {
+        try {
+            const m = (doc.url || '').match(/\/object\/public\/([^/]+)\/(.+)$/);
+            if (m) {
+                try { await window.supabaseClient.storage.from(m[1]).remove([m[2]]); } catch (_) {}
+            }
+            const { error } = await window.supabaseClient.from('documents').delete().eq('id', doc.id);
+            if (error) throw error;
+            showNotification('Document deleted.');
+            fetchDocuments();
+        } catch (e) {
+            console.error('Delete document error:', e);
+            showNotification('Failed to delete document.');
+        }
+    };
+
     return React.createElement('div', {
         className: "container mx-auto px-8 py-16 fade-in"
     }, [
@@ -86,10 +149,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                     onClick: () => onNavigate('dashboard'),
                     className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 }, [
-                    React.createElement('i', {
-                        key: "icon",
-                        className: "fas fa-arrow-left mr-2"
-                    }),
+                    React.createElement('i', { key: "icon", className: "fas fa-arrow-left mr-2" }),
                     "Back to Dashboard"
                 ]),
                 React.createElement('button', {
@@ -99,10 +159,35 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                 }, [
                     React.createElement('i', { key: 'ri', className: 'fas fa-sync mr-2' }),
                     'Refresh'
+                ]),
+                userRole === 'admin' && React.createElement('button', { key: 'add-doc-btn', onClick: () => setShowDocForm(v => !v), className: 'bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all duration-300' }, [
+                    React.createElement('i', { key: 'ai', className: 'fas fa-file-upload mr-2' }),
+                    showDocForm ? 'Close' : 'Add Document'
                 ])
             ])
         ]),
         
+        userRole === 'admin' && showDocForm && React.createElement('div', { key: 'doc-form', className: 'modern-card p-8 mb-8' }, [
+            React.createElement('div', { key: 'grid', className: 'grid md:grid-cols-3 gap-6' }, [
+                React.createElement('div', { key: 'name-field', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'name-label', className: 'block text-sm font-bold text-gray-700' }, 'Document Name'),
+                    React.createElement('input', { key: 'name-input', type: 'text', name: 'name', value: docForm.name, onChange: handleDocInputChange, className: 'modern-input w-full' })
+                ]),
+                React.createElement('div', { key: 'category-field', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'cat-label', className: 'block text-sm font-bold text-gray-700' }, 'Category'),
+                    React.createElement('input', { key: 'cat-input', type: 'text', name: 'category', value: docForm.category, onChange: handleDocInputChange, className: 'modern-input w-full' })
+                ]),
+                React.createElement('div', { key: 'file-field', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'file-label', className: 'block text-sm font-bold text-gray-700' }, 'File'),
+                    React.createElement('input', { key: 'file-input', type: 'file', name: 'file', accept: '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg', onChange: handleDocInputChange, className: 'modern-input w-full' })
+                ])
+            ]),
+            React.createElement('div', { key: 'doc-actions', className: 'mt-6 flex items-center gap-4' }, [
+                React.createElement('button', { key: 'save-doc', onClick: saveDocument, disabled: isDocSaving, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50' }, isDocSaving ? 'Saving...' : 'Save Document'),
+                React.createElement('button', { key: 'cancel-doc', onClick: () => setShowDocForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
+            ])
+        ]),
+
         React.createElement('div', {
             key: "search-section",
             className: "modern-card p-8 mb-8"
@@ -266,16 +351,17 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                                 React.createElement('td', {
                                     key: "actions",
                                     className: "px-6 py-4"
-                                }, React.createElement('button', {
-                                    onClick: () => handleDocumentAccess(doc),
-                                    className: "text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-2 hover:gap-3 transition-all duration-200",
-                                    title: "Download"
-                                }, [
-                                    React.createElement('i', {
-                                        key: "download-icon",
-                                        className: "fas fa-download"
-                                    }),
-                                    "Download"
+                                }, React.createElement('div', { className: 'flex items-center gap-3' }, [
+                                    React.createElement('button', {
+                                        key: 'dl',
+                                        onClick: () => handleDocumentAccess(doc),
+                                        className: "text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-2 hover:gap-3 transition-all duration-200",
+                                        title: "Download"
+                                    }, [
+                                        React.createElement('i', { key: "download-icon", className: "fas fa-download" }),
+                                        "Download"
+                                    ]),
+                                    userRole === 'admin' && React.createElement('button', { key: 'del', onClick: () => deleteDocument(doc), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
                                 ]))
                             ])
                         ))
