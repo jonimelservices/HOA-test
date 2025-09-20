@@ -402,6 +402,78 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     ))
                 ]);
 
+            case 'user':
+                return React.createElement('div', { className: "space-y-8" }, [
+                    React.createElement('div', { key: 'user-header', className: 'flex items-center justify-between' }, [
+                        React.createElement('div', { key: 'titles' }, [
+                            React.createElement('h3', { key: 'title', className: 'text-2xl font-black text-gray-800 mb-1' }, 'Read-only Users'),
+                            React.createElement('p', { key: 'desc', className: 'text-gray-600' }, 'Manage users with view-only access. Add by linking an Auth user ID.')
+                        ]),
+                        React.createElement('button', { key: 'add-btn', onClick: openAddUser, className: 'modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1' }, [
+                            React.createElement('i', { key: 'icon', className: 'fas fa-user-plus mr-2' }),
+                            'Add Read-only User'
+                        ])
+                    ]),
+
+                    React.createElement('div', { key: 'list-card', className: 'modern-card overflow-hidden' }, [
+                        isUsersLoading ? React.createElement('div', { key: 'loading', className: 'flex justify-center items-center py-12' }, React.createElement('div', { className: 'loader' })) :
+                        React.createElement('div', { key: 'table-wrap', className: 'overflow-x-auto' }, React.createElement('table', { className: 'min-w-full divide-y divide-gray-200' }, [
+                            React.createElement('thead', { key: 'head', className: 'bg-gradient-to-r from-gray-50 to-gray-100' }, React.createElement('tr', {}, [
+                                React.createElement('th', { key: 'name', className: 'px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider' }, 'Name / Last Name'),
+                                React.createElement('th', { key: 'address', className: 'px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider' }, 'Address'),
+                                React.createElement('th', { key: 'phone', className: 'px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider' }, 'Phone'),
+                                React.createElement('th', { key: 'email', className: 'px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider' }, 'Email'),
+                                React.createElement('th', { key: 'actions', className: 'px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider' }, 'Actions')
+                            ])),
+                            React.createElement('tbody', { key: 'body', className: 'bg-white divide-y divide-gray-200' },
+                                userRows.map((row, idx) => React.createElement('tr', { key: row.id || idx, className: 'hover:bg-gray-50 transition-colors duration-200' }, [
+                                    React.createElement('td', { key: 'name', className: 'px-6 py-4' }, React.createElement('div', { className: 'text-sm font-semibold text-gray-900' }, `${row.first_name || ''} ${row.last_name || ''}`.trim() || '—')),
+                                    React.createElement('td', { key: 'address', className: 'px-6 py-4 text-sm text-gray-600' }, row.address || '—'),
+                                    React.createElement('td', { key: 'phone', className: 'px-6 py-4 text-sm text-gray-600' }, row.phone || '—'),
+                                    React.createElement('td', { key: 'email', className: 'px-6 py-4 text-sm text-gray-600' }, row.email || '—'),
+                                    React.createElement('td', { key: 'act', className: 'px-6 py-4' }, React.createElement('div', { className: 'flex items-center gap-3' }, [
+                                        React.createElement('button', { key: 'edit', onClick: () => openEditUser(row), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-edit mr-1' }), 'Modify']),
+                                        React.createElement('button', { key: 'del', onClick: () => deleteUser(row), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
+                                    ]))
+                                ]))
+                            )
+                        ]))
+                    ]),
+
+                    showUserForm && React.createElement('div', { key: 'form', className: 'modern-card p-8' }, [
+                        React.createElement('div', { key: 'grid', className: 'grid md:grid-cols-2 gap-6' }, [
+                            !editingUserId && React.createElement('div', { key: 'id-field', className: 'space-y-2 md:col-span-2' }, [
+                                React.createElement('label', { key: 'id-label', className: 'block text-sm font-bold text-gray-700' }, 'Auth User ID (UUID)'),
+                                React.createElement('input', { key: 'id-input', type: 'text', name: 'id', value: userForm.id, onChange: handleUserFormChange, className: 'modern-input w-full', placeholder: 'Paste user UUID from Authentication > Users' })
+                            ]),
+                            React.createElement('div', { key: 'first', className: 'space-y-2' }, [
+                                React.createElement('label', { key: 'first-label', className: 'block text-sm font-bold text-gray-700' }, 'First Name'),
+                                React.createElement('input', { key: 'first-input', type: 'text', name: 'first_name', value: userForm.first_name, onChange: handleUserFormChange, className: 'modern-input w-full' })
+                            ]),
+                            React.createElement('div', { key: 'last', className: 'space-y-2' }, [
+                                React.createElement('label', { key: 'last-label', className: 'block text-sm font-bold text-gray-700' }, 'Last Name'),
+                                React.createElement('input', { key: 'last-input', type: 'text', name: 'last_name', value: userForm.last_name, onChange: handleUserFormChange, className: 'modern-input w-full' })
+                            ]),
+                            React.createElement('div', { key: 'address', className: 'space-y-2 md:col-span-2' }, [
+                                React.createElement('label', { key: 'address-label', className: 'block text-sm font-bold text-gray-700' }, 'Address'),
+                                React.createElement('input', { key: 'address-input', type: 'text', name: 'address', value: userForm.address, onChange: handleUserFormChange, className: 'modern-input w-full' })
+                            ]),
+                            React.createElement('div', { key: 'phone', className: 'space-y-2' }, [
+                                React.createElement('label', { key: 'phone-label', className: 'block text-sm font-bold text-gray-700' }, 'Phone'),
+                                React.createElement('input', { key: 'phone-input', type: 'tel', name: 'phone', value: userForm.phone, onChange: handleUserFormChange, className: 'modern-input w-full' })
+                            ]),
+                            React.createElement('div', { key: 'email', className: 'space-y-2' }, [
+                                React.createElement('label', { key: 'email-label', className: 'block text-sm font-bold text-gray-700' }, 'Email'),
+                                React.createElement('input', { key: 'email-input', type: 'email', name: 'email', value: userForm.email, onChange: handleUserFormChange, className: 'modern-input w-full' })
+                            ])
+                        ]),
+                        React.createElement('div', { key: 'form-actions', className: 'mt-6 flex items-center gap-4' }, [
+                            React.createElement('button', { key: 'save', onClick: saveUser, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1' }, [React.createElement('i', { key: 'i', className: 'fas fa-save mr-2' }), editingUserId ? 'Save Changes' : 'Add User']),
+                            React.createElement('button', { key: 'cancel', onClick: () => setShowUserForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
+                        ])
+                    ])
+                ]);
+
             default:
                 return null;
         }
