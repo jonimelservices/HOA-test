@@ -1,7 +1,6 @@
 import { logAccess } from '../../utils/supabase.js';
 
 const { useState, useEffect } = React;
-import { logAccess } from '../../utils/supabase.js';
 
 export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavigate }) => {
     const [documents, setDocuments] = useState([]);
