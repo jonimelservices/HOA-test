@@ -142,7 +142,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
 
     const openAddUser = () => {
         setEditingUserId(null);
-        setUserForm({ id: '', first_name: '', last_name: '', address: '', phone: '', email: '', role: 'member' });
+        setUserForm({ first_name: '', last_name: '', address: '', phone: '', email: '', role: 'member' });
         setShowUserForm(true);
     };
 
