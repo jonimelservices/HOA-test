@@ -159,7 +159,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                     className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 }, [
                     React.createElement('i', { key: "icon", className: "fas fa-arrow-left mr-2" }),
-                    "Back to Dashboard"
+                    React.createElement('span', { key: 'label' }, 'Back to Dashboard')
                 ]),
                 React.createElement('button', {
                     key: 'refresh-btn',
@@ -167,7 +167,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                     className: 'bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-all duration-300'
                 }, [
                     React.createElement('i', { key: 'ri', className: 'fas fa-sync mr-2' }),
-                    'Refresh'
+                    React.createElement('span', { key: 'label' }, 'Refresh')
                 ]),
                 userRole === 'admin' && React.createElement('button', { key: 'add-event-btn', onClick: () => setShowEventForm(v => !v), className: 'bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all duration-300' }, [
                     React.createElement('i', { key: 'ai', className: 'fas fa-calendar-plus mr-2' }),
@@ -342,7 +342,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                                         className: "modern-button px-4 py-2 text-sm rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1"
                                     }, [
                                         React.createElement('i', { key: "attachment-icon", className: "fas fa-paperclip mr-2" }),
-                                        "Download"
+                                        React.createElement('span', { key: 'label' }, 'Download')
                                     ]))
                                 ]),
                                 userRole === 'admin' && React.createElement('div', { key: 'admin-actions', className: 'mt-4' }, [
