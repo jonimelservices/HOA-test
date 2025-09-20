@@ -427,12 +427,12 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                 return React.createElement('div', { className: "space-y-8" }, [
                     React.createElement('div', { key: 'user-header', className: 'flex items-center justify-between' }, [
                         React.createElement('div', { key: 'titles' }, [
-                            React.createElement('h3', { key: 'title', className: 'text-2xl font-black text-gray-800 mb-1' }, 'Read-only Users'),
-                            React.createElement('p', { key: 'desc', className: 'text-gray-600' }, 'Manage users with view-only access. Add by linking an Auth user ID.')
+                            React.createElement('h3', { key: 'title', className: 'text-2xl font-black text-gray-800 mb-1' }, 'Users'),
+                            React.createElement('p', { key: 'desc', className: 'text-gray-600' }, 'Manage users with view-only access.')
                         ]),
                         React.createElement('button', { key: 'add-btn', onClick: openAddUser, className: 'modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1' }, [
                             React.createElement('i', { key: 'icon', className: 'fas fa-user-plus mr-2' }),
-                            'Add Read-only User'
+                            'Add User'
                         ])
                     ]),
 
@@ -463,11 +463,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
 
                     showUserForm && React.createElement('div', { key: 'form', className: 'modern-card p-8' }, [
                         React.createElement('div', { key: 'grid', className: 'grid md:grid-cols-2 gap-6' }, [
-                            !editingUserId && React.createElement('div', { key: 'id-field', className: 'space-y-2 md:col-span-2' }, [
-                                React.createElement('label', { key: 'id-label', className: 'block text-sm font-bold text-gray-700' }, 'Auth User ID (UUID)'),
-                                React.createElement('input', { key: 'id-input', type: 'text', name: 'id', value: userForm.id, onChange: handleUserFormChange, className: 'modern-input w-full', placeholder: 'Paste user UUID from Authentication > Users' })
-                            ]),
-                            React.createElement('div', { key: 'first', className: 'space-y-2' }, [
+                                                        React.createElement('div', { key: 'first', className: 'space-y-2' }, [
                                 React.createElement('label', { key: 'first-label', className: 'block text-sm font-bold text-gray-700' }, 'First Name'),
                                 React.createElement('input', { key: 'first-input', type: 'text', name: 'first_name', value: userForm.first_name, onChange: handleUserFormChange, className: 'modern-input w-full' })
                             ]),
