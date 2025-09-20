@@ -136,7 +136,8 @@ export const App = () => {
             case 'about':
                 return React.createElement(AboutPage, {
                     config: config,
-                    theme: activeTheme
+                    theme: activeTheme,
+                    userRole: userRole
                 });
             case 'login':
                 return React.createElement(LoginPage, {
