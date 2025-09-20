@@ -188,6 +188,29 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                 }
                 showNotification('User updated.');
             } else {
+                // Try to create an Auth user (Edge Function with service role required)
+                try {
+                    const { data: createData, error: createErr } = await window.supabaseClient.functions.invoke('admin-create-user', {
+                        body: JSON.stringify({
+                            email: userForm.email,
+                            full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim(),
+                            role: userForm.role || 'member'
+                        })
+                    });
+                    if (!createErr && createData?.user_id) {
+                        // Ensure profile row updated with same id
+                        const up = await window.supabaseClient.from('users').upsert({ id: createData.user_id, ...payloadFull });
+                        if (up.error) throw up.error;
+                        showNotification('User account created and profile saved.');
+                        setShowUserForm(false);
+                        fetchReadOnlyUsers();
+                        return;
+                    }
+                } catch (e) {
+                    // Proceed with fallback below
+                }
+
+                // Fallback: insert/update profile by email only
                 let { error } = await window.supabaseClient.from('users').insert(payloadFull);
                 if (error) {
                     if ((error.code === '42703') || /column .* does not exist/i.test(error.message || '')) {
@@ -208,7 +231,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                         throw error;
                     }
                 }
-                showNotification('User added.');
+                showNotification('User added. (Auth invite requires admin-create-user function)');
             }
             setShowUserForm(false);
             fetchReadOnlyUsers();
