@@ -176,7 +176,36 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
             ])
         ]),
 
-        isLoading ? 
+        userRole === 'admin' && showEventForm && React.createElement('div', { key: 'event-form', className: 'modern-card p-8 mb-8' }, [
+            React.createElement('div', { key: 'grid', className: 'grid md:grid-cols-2 gap-6' }, [
+                React.createElement('div', { key: 'title', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'tl', className: 'block text-sm font-bold text-gray-700' }, 'Title'),
+                    React.createElement('input', { key: 'ti', type: 'text', name: 'title', value: eventForm.title, onChange: handleEventInputChange, className: 'modern-input w-full' })
+                ]),
+                React.createElement('div', { key: 'date', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'dl', className: 'block text-sm font-bold text-gray-700' }, 'Date'),
+                    React.createElement('input', { key: 'di', type: 'date', name: 'date', value: eventForm.date, onChange: handleEventInputChange, className: 'modern-input w-full' })
+                ]),
+                React.createElement('div', { key: 'time', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'tlb', className: 'block text-sm font-bold text-gray-700' }, 'Time'),
+                    React.createElement('input', { key: 'tib', type: 'text', name: 'time', value: eventForm.time, onChange: handleEventInputChange, className: 'modern-input w-full', placeholder: 'e.g., 7:00 PM' })
+                ]),
+                React.createElement('div', { key: 'location', className: 'space-y-2' }, [
+                    React.createElement('label', { key: 'll', className: 'block text-sm font-bold text-gray-700' }, 'Location'),
+                    React.createElement('input', { key: 'li', type: 'text', name: 'location', value: eventForm.location, onChange: handleEventInputChange, className: 'modern-input w-full' })
+                ]),
+                React.createElement('div', { key: 'attach', className: 'space-y-2 md:col-span-2' }, [
+                    React.createElement('label', { key: 'al', className: 'block text-sm font-bold text-gray-700' }, 'Attachment (optional)'),
+                    React.createElement('input', { key: 'ai', type: 'file', name: 'attachment', accept: '.pdf,.png,.jpg,.jpeg', onChange: handleEventInputChange, className: 'modern-input w-full' })
+                ])
+            ]),
+            React.createElement('div', { key: 'actions', className: 'mt-6 flex items-center gap-4' }, [
+                React.createElement('button', { key: 'save', onClick: saveEvent, disabled: isEventSaving, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50' }, isEventSaving ? 'Saving...' : 'Save Event'),
+                React.createElement('button', { key: 'cancel', onClick: () => setShowEventForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
+            ])
+        ]),
+
+        isLoading ?
             React.createElement('div', {
                 key: "loading",
                 className: "flex justify-center items-center py-16"
