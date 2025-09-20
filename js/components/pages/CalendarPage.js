@@ -158,10 +158,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                     onClick: () => onNavigate('dashboard'),
                     className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 }, [
-                    React.createElement('i', {
-                        key: "icon",
-                        className: "fas fa-arrow-left mr-2"
-                    }),
+                    React.createElement('i', { key: "icon", className: "fas fa-arrow-left mr-2" }),
                     "Back to Dashboard"
                 ]),
                 React.createElement('button', {
@@ -171,6 +168,10 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                 }, [
                     React.createElement('i', { key: 'ri', className: 'fas fa-sync mr-2' }),
                     'Refresh'
+                ]),
+                userRole === 'admin' && React.createElement('button', { key: 'add-event-btn', onClick: () => setShowEventForm(v => !v), className: 'bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all duration-300' }, [
+                    React.createElement('i', { key: 'ai', className: 'fas fa-calendar-plus mr-2' }),
+                    showEventForm ? 'Close' : 'Add Event'
                 ])
             ])
         ]),
