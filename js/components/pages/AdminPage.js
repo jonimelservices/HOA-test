@@ -110,21 +110,22 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         try {
             const { data, error } = await window.supabaseClient
                 .from('users')
-                .select('id, email, role, full_name, first_name, last_name, address, phone')
+                .select('id, email, role, full_name')
                 .neq('role', 'admin');
             if (error) {
-                console.error('Error loading users:', error);
+                console.error('Error loading users:', error.message || error);
                 setUserRows([]);
-                showNotification('Could not load users. Check RLS/policies.');
+                const msg = error.code === '42501' || error.code === 'PGRST301' ? 'Access denied by RLS. Ensure admin policy exists.' : 'Could not load users.';
+                showNotification(msg);
             } else {
                 const rows = (data || []).map(u => ({
                     id: u.id,
                     email: u.email || '',
                     role: u.role || 'member',
-                    first_name: u.first_name || (u.full_name ? (u.full_name.split(' ')[0] || '') : ''),
-                    last_name: u.last_name || (u.full_name ? (u.full_name.split(' ').slice(1).join(' ') || '') : ''),
-                    address: u.address || '',
-                    phone: u.phone || ''
+                    first_name: (u.full_name ? (u.full_name.split(' ')[0] || '') : ''),
+                    last_name: (u.full_name ? (u.full_name.split(' ').slice(1).join(' ') || '') : ''),
+                    address: '',
+                    phone: ''
                 }));
                 setUserRows(rows);
             }
@@ -157,7 +158,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     };
 
     const saveUser = async () => {
-        const payload = {
+        const payloadFull = {
             email: userForm.email || null,
             full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim() || null,
             first_name: userForm.first_name || null,
@@ -166,26 +167,46 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
             phone: userForm.phone || null,
             role: userForm.role || 'member'
         };
+        const payloadMinimal = {
+            email: userForm.email || null,
+            full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim() || null,
+            role: userForm.role || 'member'
+        };
         try {
             if (editingUserId) {
-                const { error } = await window.supabaseClient.from('users').update(payload).eq('id', editingUserId);
-                if (error) throw error;
+                let { error } = await window.supabaseClient.from('users').update(payloadFull).eq('id', editingUserId);
+                if (error) {
+                    // Retry with minimal payload if unknown columns
+                    if ((error.code === '42703') || /column .* does not exist/i.test(error.message || '')) {
+                        const res2 = await window.supabaseClient.from('users').update(payloadMinimal).eq('id', editingUserId);
+                        if (res2.error) throw res2.error;
+                    } else {
+                        throw error;
+                    }
+                }
                 showNotification('User updated.');
             } else {
                 if (!userForm.id) {
                     showNotification('User ID is required. Create user in Auth first, then paste their UUID here.');
                     return;
                 }
-                const insertPayload = { id: userForm.id, ...payload };
-                const { error } = await window.supabaseClient.from('users').insert(insertPayload);
-                if (error) throw error;
+                let { error } = await window.supabaseClient.from('users').insert({ id: userForm.id, ...payloadFull });
+                if (error) {
+                    if ((error.code === '42703') || /column .* does not exist/i.test(error.message || '')) {
+                        const res2 = await window.supabaseClient.from('users').insert({ id: userForm.id, ...payloadMinimal });
+                        if (res2.error) throw res2.error;
+                    } else {
+                        throw error;
+                    }
+                }
                 showNotification('User added.');
             }
             setShowUserForm(false);
             fetchReadOnlyUsers();
         } catch (err) {
-            console.error('Save user error:', err);
-            showNotification('Failed to save user. Ensure columns/policies exist.');
+            console.error('Save user error:', err.message || err);
+            const msg = (err.code === '42501' || err.code === 'PGRST301') ? 'Access denied by RLS. Ensure admin policy exists.' : 'Failed to save user.';
+            showNotification(msg);
         }
     };
 
