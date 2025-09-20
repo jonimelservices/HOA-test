@@ -341,12 +341,12 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                                         rel: "noopener noreferrer",
                                         className: "modern-button px-4 py-2 text-sm rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1"
                                     }, [
-                                        React.createElement('i', {
-                                            key: "attachment-icon",
-                                            className: "fas fa-paperclip mr-2"
-                                        }),
+                                        React.createElement('i', { key: "attachment-icon", className: "fas fa-paperclip mr-2" }),
                                         "Download"
                                     ]))
+                                ]),
+                                userRole === 'admin' && React.createElement('div', { key: 'admin-actions', className: 'mt-4' }, [
+                                    React.createElement('button', { key: 'del', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
                                 ])
                             ]);
                         }))
