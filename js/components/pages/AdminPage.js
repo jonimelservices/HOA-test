@@ -229,6 +229,100 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         }
     };
 
+    const parseCSV = (text) => {
+        const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(l => l.trim().length);
+        if (!lines.length) return [];
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+            const s = lines[i];
+            const row = [];
+            let cur = '';
+            let inQuotes = false;
+            for (let j = 0; j < s.length; j++) {
+                const ch = s[j];
+                if (ch === '"') {
+                    if (inQuotes && s[j+1] === '"') { cur += '"'; j++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (ch === ',' && !inQuotes) {
+                    row.push(cur);
+                    cur = '';
+                } else {
+                    cur += ch;
+                }
+            }
+            row.push(cur);
+            const obj = {};
+            headers.forEach((h, idx) => obj[h] = (row[idx] || '').trim());
+            rows.push(obj);
+        }
+        return rows;
+    };
+
+    const upsertUsersFromCSV = async (users) => {
+        let success = 0, failed = 0;
+        for (const u of users) {
+            const payloadFull = {
+                email: u.email || null,
+                full_name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || null,
+                first_name: u.first_name || null,
+                last_name: u.last_name || null,
+                address: u.address || null,
+                phone: u.phone || null,
+                role: u.role || 'member'
+            };
+            const payloadMinimal = { email: u.email || null, full_name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || null, role: u.role || 'member' };
+            try {
+                if (!u.email) throw new Error('Missing email');
+                let { error } = await window.supabaseClient.from('users').insert(payloadFull);
+                if (error) {
+                    if ((error.code === '42703') || /column .* does not exist/i.test(error.message || '')) {
+                        const res2 = await window.supabaseClient.from('users').insert(payloadMinimal);
+                        if (res2.error) throw res2.error;
+                    } else if ((error.code === '23505') || /duplicate key/i.test(error.message || '')) {
+                        const upd = await window.supabaseClient.from('users').update(payloadFull).eq('email', u.email);
+                        if (upd.error) throw upd.error;
+                    } else if ((error.code === '23503') || /foreign key/i.test(error.message || '')) {
+                        const { data: existing } = await window.supabaseClient.from('users').select('id').eq('email', u.email).maybeSingle();
+                        if (existing?.id) {
+                            const upd = await window.supabaseClient.from('users').update(payloadFull).eq('id', existing.id);
+                            if (upd.error) throw upd.error;
+                        } else {
+                            throw error;
+                        }
+                    } else {
+                        throw error;
+                    }
+                }
+                success++;
+            } catch (e) {
+                console.error('CSV row failed:', u, e.message || e);
+                failed++;
+            }
+        }
+        showNotification(`Bulk upload complete. Imported: ${success}. Failed: ${failed}.`);
+        fetchReadOnlyUsers();
+    };
+
+    const handleBulkUploadClick = () => fileInputRef.current && fileInputRef.current.click();
+    const handleCSVChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsBulkUploading(true);
+        const reader = new FileReader();
+        reader.onload = async () => {
+            try {
+                const text = String(reader.result || '');
+                const rows = parseCSV(text);
+                await upsertUsersFromCSV(rows);
+            } finally {
+                setIsBulkUploading(false);
+                e.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'general':
