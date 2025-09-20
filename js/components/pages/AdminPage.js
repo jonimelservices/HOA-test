@@ -1,6 +1,6 @@
 import { themeClasses } from '../../utils/themes.js';
 
-const { useState } = React;
+const { useState, useEffect } = React;
 
 export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, showNotification, onNavigate }) => {
     const [localConfig, setLocalConfig] = useState(config || {});
