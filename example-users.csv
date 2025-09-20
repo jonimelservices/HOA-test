@@ -1,0 +1,6 @@
+first_name,last_name,address,phone,email,role
+Alice,Johnson,123 Palm Ave,305-555-1001,alice@example.com,member
+Bob,Martinez,456 Ocean Dr,305-555-1002,bob@example.com,member
+Carol,Nguyen,789 Sunset Blvd,305-555-1003,carol@example.com,member
+"Dave, Jr.",O'Neil,101 Bayshore Rd,305-555-1004,dave.oneil@example.com,member
+Emma,Lee,202 Coral Way,305-555-1005,emma.lee@example.com,member
