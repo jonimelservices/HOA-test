@@ -6,6 +6,11 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const [localConfig, setLocalConfig] = useState(config || {});
     const [localThemeName, setLocalThemeName] = useState(themeName || 'blue');
     const [activeTab, setActiveTab] = useState('general');
+    const [userRows, setUserRows] = useState([]);
+    const [isUsersLoading, setIsUsersLoading] = useState(false);
+    const [showUserForm, setShowUserForm] = useState(false);
+    const [editingUserId, setEditingUserId] = useState(null);
+    const [userForm, setUserForm] = useState({ id: '', first_name: '', last_name: '', address: '', phone: '', email: '', role: 'member' });
 
     const handleConfigChange = (e) => {
         const { name, value } = e.target;
