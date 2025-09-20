@@ -35,6 +35,15 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
 
     useEffect(() => {
         fetchEvents();
+        const channel = window.supabaseClient
+            .channel('events-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+                fetchEvents();
+            })
+            .subscribe();
+        return () => {
+            try { window.supabaseClient.removeChannel(channel); } catch (e) {}
+        };
     }, []);
 
     const formatDate = (dateString) => {
@@ -79,16 +88,26 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                     className: "text-xl text-gray-600"
                 }, "Stay informed about upcoming events and meetings")
             ]),
-            React.createElement('button', {
-                key: "back-btn",
-                onClick: () => onNavigate('dashboard'),
-                className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            }, [
-                React.createElement('i', {
-                    key: "icon",
-                    className: "fas fa-arrow-left mr-2"
-                }),
-                "Back to Dashboard"
+            React.createElement('div', { key: 'header-actions', className: 'flex items-center gap-3' }, [
+                React.createElement('button', {
+                    key: "back-btn",
+                    onClick: () => onNavigate('dashboard'),
+                    className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                }, [
+                    React.createElement('i', {
+                        key: "icon",
+                        className: "fas fa-arrow-left mr-2"
+                    }),
+                    "Back to Dashboard"
+                ]),
+                React.createElement('button', {
+                    key: 'refresh-btn',
+                    onClick: fetchEvents,
+                    className: 'bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-all duration-300'
+                }, [
+                    React.createElement('i', { key: 'ri', className: 'fas fa-sync mr-2' }),
+                    'Refresh'
+                ])
             ])
         ]),
 
