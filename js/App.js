@@ -16,6 +16,8 @@ import { themeClasses, initialHoaConfig } from './utils/themes.js';
 
 const { useState, useEffect } = React;
 
+const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+
 export const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
     const [userRole, setUserRole] = useState(null);
@@ -72,6 +74,27 @@ export const App = () => {
         const timer = setTimeout(() => setIsLoading(false), 500);
         return () => clearTimeout(timer);
     }, [currentPage]);
+
+    // Auto-logout after 5 minutes of inactivity
+    useEffect(() => {
+        if (!userRole) return;
+        let idleTimer = null;
+        const resetTimer = () => {
+            if (idleTimer) clearTimeout(idleTimer);
+            idleTimer = setTimeout(async () => {
+                try { showNotification('You were logged out due to 5 minutes of inactivity.'); } catch (_) {}
+                await handleLogout();
+            }, IDLE_TIMEOUT_MS);
+        };
+        const activityHandler = () => resetTimer();
+        const events = ['mousemove', 'keydown', 'scroll', 'touchstart'];
+        events.forEach(evt => window.addEventListener(evt, activityHandler, { passive: true }));
+        resetTimer();
+        return () => {
+            events.forEach(evt => window.removeEventListener(evt, activityHandler));
+            if (idleTimer) clearTimeout(idleTimer);
+        };
+    }, [userRole]);
     
     const showNotification = (message) => {
         setNotification(message);
