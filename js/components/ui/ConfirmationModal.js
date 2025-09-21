@@ -1,6 +1,6 @@
 import { themeClasses } from '../../utils/themes.js';
 
-export const ConfirmationModal = ({ theme, message, onConfirm, onCancel }) => {
+export const ConfirmationModal = ({ theme, message, onConfirm, onCancel, title = 'Confirm Action', confirmLabel = 'Confirm', cancelLabel = 'Cancel' }) => {
     return React.createElement('div', {
         className: "modal-backdrop"
     },
@@ -10,7 +10,7 @@ export const ConfirmationModal = ({ theme, message, onConfirm, onCancel }) => {
             React.createElement('h2', {
                 key: "title",
                 className: "text-2xl font-bold text-gray-800 mb-5"
-            }, "Confirm Action"),
+            }, title),
             React.createElement('p', {
                 key: "message",
                 className: "text-gray-600 text-lg mb-8"
@@ -23,12 +23,12 @@ export const ConfirmationModal = ({ theme, message, onConfirm, onCancel }) => {
                     key: "cancel",
                     onClick: onCancel,
                     className: "bg-gray-200 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-300"
-                }, "Cancel"),
+                }, cancelLabel),
                 React.createElement('button', {
                     key: "confirm",
                     onClick: onConfirm,
                     className: `${themeClasses.red.bg} text-white font-semibold py-3 px-8 rounded-lg ${themeClasses.red.hoverBg}`
-                }, "Delete")
+                }, confirmLabel)
             ])
         ])
     );
