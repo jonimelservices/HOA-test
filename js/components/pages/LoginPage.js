@@ -36,8 +36,7 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
             const minimalProfile = {
                 id: user.id,
                 email: user.email || null,
-                full_name: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || null,
-                role: 'member'
+                full_name: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || null
             };
 
             // Attempt to create profile; proceed regardless of immediate fetch
