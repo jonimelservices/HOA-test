@@ -22,13 +22,13 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
             setIsLoading(false);
         } else if (user) {
             // Try to load profile; if missing, create a minimal one
-            const { data: userData, error: userError } = await window.supabaseClient
+            const { data: userData } = await window.supabaseClient
                 .from('users')
                 .select('*')
                 .eq('id', user.id)
                 .maybeSingle();
 
-            if (!userError && userData) {
+            if (userData) {
                 onLogin(userData);
                 return;
             }
@@ -40,26 +40,32 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
                 role: 'member'
             };
 
-            const up = await window.supabaseClient.from('users').upsert(minimalProfile);
-            if (!up.error) {
+            // Attempt to create profile; proceed regardless of immediate fetch
+            const { error: upErr } = await window.supabaseClient
+                .from('users')
+                .upsert(minimalProfile)
+                .select();
+            if (!upErr) {
                 onLogin(minimalProfile);
+                setIsLoading(false);
                 return;
             }
 
             // Fallback: if upsert failed, try to fetch existing profile anyway
-            const { data: createdProfile, error: fetchErr } = await window.supabaseClient
+            const { data: createdProfile } = await window.supabaseClient
                 .from('users')
                 .select('*')
                 .eq('id', user.id)
                 .maybeSingle();
-            if (!fetchErr && createdProfile) {
+            if (createdProfile) {
                 onLogin(createdProfile);
+                setIsLoading(false);
                 return;
             }
 
-            setError("Could not retrieve user profile. Please contact support.");
-            showNotification("Login failed: Could not retrieve user profile.");
-            await window.supabaseClient.auth.signOut();
+            // As last resort, continue with minimal local profile
+            onLogin(minimalProfile);
+            showNotification('Proceeding with a temporary profile. Some features may be limited until your profile syncs.');
             setIsLoading(false);
             return;
         }
