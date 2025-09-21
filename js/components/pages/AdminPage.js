@@ -126,10 +126,10 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     id: u.id,
                     email: u.email || '',
                     role: u.role || 'member',
-                    first_name: (u.full_name ? (u.full_name.split(' ')[0] || '') : ''),
-                    last_name: (u.full_name ? (u.full_name.split(' ').slice(1).join(' ') || '') : ''),
-                    address: '',
-                    phone: ''
+                    first_name: (u.first_name ?? (u.full_name ? (u.full_name.split(' ')[0] || '') : '')) || '',
+                    last_name: (u.last_name ?? (u.full_name ? (u.full_name.split(' ').slice(1).join(' ') || '') : '')) || '',
+                    address: u.address || '',
+                    phone: u.phone || ''
                 }));
                 setUserRows(rows);
             }
