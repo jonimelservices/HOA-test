@@ -1,4 +1,5 @@
 import { themeClasses } from '../../utils/themes.js';
+import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 
 const { useState, useEffect, useRef } = React;
 
@@ -13,6 +14,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const [userForm, setUserForm] = useState({ id: '', first_name: '', last_name: '', address: '', phone: '', email: '', role: 'member' });
     const [isBulkUploading, setIsBulkUploading] = useState(false);
     const fileInputRef = useRef(null);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     const handleConfigChange = (e) => {
         const { name, value } = e.target;
@@ -717,7 +719,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     }, "Reset Changes"),
                     React.createElement('button', {
                         key: "save-btn",
-                        onClick: handleSave,
+                        onClick: () => setShowSaveConfirm(true),
                         className: "modern-button px-12 py-3 text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     }, [
                         React.createElement('i', {
@@ -728,6 +730,16 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     ])
                 ])
             ])
-        ])
+        ]),
+        showSaveConfirm && React.createElement(ConfirmationModal, {
+            key: 'confirm-save',
+            theme: theme,
+            title: 'Save Changes',
+            message: 'Are you sure you want to save all changes? This will update your site settings.',
+            confirmLabel: 'Save',
+            cancelLabel: 'Cancel',
+            onConfirm: async () => { setShowSaveConfirm(false); await handleSave(); },
+            onCancel: () => setShowSaveConfirm(false)
+        })
     ]);
 };
