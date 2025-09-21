@@ -41,27 +41,27 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
             };
 
             const up = await window.supabaseClient.from('users').upsert(minimalProfile);
-            if (up.error) {
-                setError("Could not retrieve user profile. Please contact support.");
-                showNotification("Login failed: Could not retrieve user profile.");
-                await window.supabaseClient.auth.signOut();
-                setIsLoading(false);
+            if (!up.error) {
+                onLogin(minimalProfile);
                 return;
             }
 
+            // Fallback: if upsert failed, try to fetch existing profile anyway
             const { data: createdProfile, error: fetchErr } = await window.supabaseClient
                 .from('users')
                 .select('*')
                 .eq('id', user.id)
-                .single();
-            if (fetchErr || !createdProfile) {
-                setError("Could not retrieve user profile. Please contact support.");
-                showNotification("Login failed: Could not retrieve user profile.");
-                await window.supabaseClient.auth.signOut();
-                setIsLoading(false);
+                .maybeSingle();
+            if (!fetchErr && createdProfile) {
+                onLogin(createdProfile);
                 return;
             }
-            onLogin(createdProfile);
+
+            setError("Could not retrieve user profile. Please contact support.");
+            showNotification("Login failed: Could not retrieve user profile.");
+            await window.supabaseClient.auth.signOut();
+            setIsLoading(false);
+            return;
         }
     };
 
