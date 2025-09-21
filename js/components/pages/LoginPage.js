@@ -45,7 +45,12 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
                 .upsert(minimalProfile)
                 .select();
             if (!upErr) {
-                onLogin(minimalProfile);
+                const { data: freshProfile } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .maybeSingle();
+                onLogin(freshProfile || minimalProfile);
                 setIsLoading(false);
                 return;
             }
