@@ -114,7 +114,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         try {
             const { data, error } = await window.supabaseClient
                 .from('users')
-                .select('id, email, role, full_name')
+                .select('id, email, role, full_name, first_name, last_name, address, phone')
                 .neq('role', 'admin');
             if (error) {
                 console.error('Error loading users:', error.message || error);
