@@ -1,3 +1,4 @@
+import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 const { useState } = React;
 
 export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate }) => {
@@ -5,6 +6,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [activeTab, setActiveTab] = useState('profile');
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -396,7 +398,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                     key: "save-section",
                     className: "mt-8 text-center"
                 }, React.createElement('button', {
-                    onClick: handleSave,
+                    onClick: () => setShowSaveConfirm(true),
                     className: "modern-button px-12 py-4 text-xl rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105"
                 }, [
                     React.createElement('i', {
@@ -406,6 +408,16 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                     "Save Changes"
                 ]))
             ])
-        ])
+        ]),
+        showSaveConfirm && React.createElement(ConfirmationModal, {
+            key: 'confirm-save',
+            theme: theme,
+            title: 'Save Changes',
+            message: 'Are you sure you want to save your account changes?',
+            confirmLabel: 'Save',
+            cancelLabel: 'Cancel',
+            onConfirm: async () => { setShowSaveConfirm(false); await handleSave(); },
+            onCancel: () => setShowSaveConfirm(false)
+        })
     ]);
 };
