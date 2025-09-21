@@ -192,13 +192,29 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
             } else {
                 // Try to create an Auth user (Edge Function with service role required)
                 try {
-                    const { data: createData, error: createErr } = await window.supabaseClient.functions.invoke('admin-create-user', {
-                        body: JSON.stringify({
-                            email: userForm.email,
-                            full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim(),
-                            role: userForm.role || 'member'
-                        })
-                    });
+                    let createData = null; let createErr = null;
+                    try {
+                        const res = await window.supabaseClient.functions.invoke('create-user', {
+                            body: JSON.stringify({
+                                email: userForm.email,
+                                full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim(),
+                                role: userForm.role || 'member'
+                            })
+                        });
+                        createData = res.data; createErr = res.error || null;
+                    } catch (_) {}
+
+                    if (createErr || !createData?.user_id) {
+                        const res2 = await window.supabaseClient.functions.invoke('admin-create-user', {
+                            body: JSON.stringify({
+                                email: userForm.email,
+                                full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim(),
+                                role: userForm.role || 'member'
+                            })
+                        });
+                        createData = res2.data; createErr = res2.error || null;
+                    }
+
                     if (!createErr && createData?.user_id) {
                         // Ensure profile row updated with same id
                         const up = await window.supabaseClient.from('users').upsert({ id: createData.user_id, ...payloadFull });

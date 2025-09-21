@@ -21,20 +21,47 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
             showNotification("Login failed: " + authError.message);
             setIsLoading(false);
         } else if (user) {
+            // Try to load profile; if missing, create a minimal one
             const { data: userData, error: userError } = await window.supabaseClient
                 .from('users')
                 .select('*')
                 .eq('id', user.id)
-                .single();
+                .maybeSingle();
 
-            if (userError || !userData) {
+            if (!userError && userData) {
+                onLogin(userData);
+                return;
+            }
+
+            const minimalProfile = {
+                id: user.id,
+                email: user.email || null,
+                full_name: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || null,
+                role: 'member'
+            };
+
+            const up = await window.supabaseClient.from('users').upsert(minimalProfile);
+            if (up.error) {
                 setError("Could not retrieve user profile. Please contact support.");
                 showNotification("Login failed: Could not retrieve user profile.");
                 await window.supabaseClient.auth.signOut();
                 setIsLoading(false);
-            } else {
-                onLogin(userData);
+                return;
             }
+
+            const { data: createdProfile, error: fetchErr } = await window.supabaseClient
+                .from('users')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            if (fetchErr || !createdProfile) {
+                setError("Could not retrieve user profile. Please contact support.");
+                showNotification("Login failed: Could not retrieve user profile.");
+                await window.supabaseClient.auth.signOut();
+                setIsLoading(false);
+                return;
+            }
+            onLogin(createdProfile);
         }
     };
 
