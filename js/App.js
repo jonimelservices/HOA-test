@@ -49,11 +49,11 @@ export const App = () => {
         const { data: authListener } = window.supabaseClient.auth.onAuthStateChange(
             async (event, session) => {
                 if (session?.user) {
-                    const { data: userData, error } = await window.supabaseClient
+                    const { data: userData } = await window.supabaseClient
                         .from('users')
                         .select('*')
                         .eq('id', session.user.id)
-                        .single();
+                        .maybeSingle();
                     if (userData) {
                         setUser(userData);
                         setUserRole(userData.role);
