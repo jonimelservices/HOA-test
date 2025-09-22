@@ -29,7 +29,7 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
                 .maybeSingle();
 
             if (userData) {
-                onLogin(userData);
+                onLogin({ ...userData, role: userData.role || 'member' });
                 return;
             }
 
@@ -50,7 +50,8 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
                     .select('*')
                     .eq('id', user.id)
                     .maybeSingle();
-                onLogin(freshProfile || minimalProfile);
+                const profile = freshProfile ? { ...freshProfile, role: freshProfile.role || 'member' } : { ...minimalProfile, role: 'member' };
+                onLogin(profile);
                 setIsLoading(false);
                 return;
             }
@@ -62,13 +63,13 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
                 .eq('id', user.id)
                 .maybeSingle();
             if (createdProfile) {
-                onLogin(createdProfile);
+                onLogin({ ...createdProfile, role: createdProfile.role || 'member' });
                 setIsLoading(false);
                 return;
             }
 
             // As last resort, continue with minimal local profile
-            onLogin(minimalProfile);
+            onLogin({ ...minimalProfile, role: 'member' });
             showNotification('Proceeding with a temporary profile. Some features may be limited until your profile syncs.');
             setIsLoading(false);
             return;
