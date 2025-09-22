@@ -6,6 +6,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
     const [showEventForm, setShowEventForm] = useState(false);
     const [isEventSaving, setIsEventSaving] = useState(false);
     const [eventForm, setEventForm] = useState({ title: '', date: '', time: '', location: '', attachment: null });
+    const [editingEvent, setEditingEvent] = useState(null);
 
     const fetchEvents = async () => {
         setIsLoading(true);
@@ -80,6 +81,23 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
         }
     };
 
+    const startEditEvent = (ev) => {
+        setEditingEvent(ev);
+        setEventForm({
+            title: ev.title || '',
+            date: ev.date || '',
+            time: ev.time || '',
+            location: ev.location || '',
+            attachment: null
+        });
+        setShowEventForm(true);
+    };
+
+    const resetForm = () => {
+        setEventForm({ title: '', date: '', time: '', location: '', attachment: null });
+        setEditingEvent(null);
+    };
+
     const saveEvent = async () => {
         if (!eventForm.title || !eventForm.date) {
             showNotification('Please provide a title and date.');
@@ -96,17 +114,37 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                 const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
                 attachment_url = pub?.publicUrl || null;
             }
-            const ins = await window.supabaseClient.from('events').insert({
-                title: eventForm.title,
-                date: eventForm.date,
-                time: eventForm.time || null,
-                location: eventForm.location || null,
-                attachment_url
-            });
-            if (ins.error) throw ins.error;
-            showNotification('Event added.');
+
+            if (editingEvent && editingEvent.id) {
+                if (attachment_url && editingEvent.attachment_url) {
+                    const m = (editingEvent.attachment_url || '').match(/\/object\/public\/([^/]+)\/(.+)$/);
+                    if (m) {
+                        try { await window.supabaseClient.storage.from(m[1]).remove([m[2]]); } catch (_) {}
+                    }
+                }
+                const updPayload = {
+                    title: eventForm.title,
+                    date: eventForm.date,
+                    time: eventForm.time || null,
+                    location: eventForm.location || null
+                };
+                if (attachment_url) updPayload.attachment_url = attachment_url;
+                const upd = await window.supabaseClient.from('events').update(updPayload).eq('id', editingEvent.id);
+                if (upd.error) throw upd.error;
+                showNotification('Event updated.');
+            } else {
+                const ins = await window.supabaseClient.from('events').insert({
+                    title: eventForm.title,
+                    date: eventForm.date,
+                    time: eventForm.time || null,
+                    location: eventForm.location || null,
+                    attachment_url
+                });
+                if (ins.error) throw ins.error;
+                showNotification('Event added.');
+            }
             setShowEventForm(false);
-            setEventForm({ title: '', date: '', time: '', location: '', attachment: null });
+            resetForm();
             fetchEvents();
         } catch (e) {
             console.error('Add event error:', e);
@@ -169,7 +207,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                     React.createElement('i', { key: 'ri', className: 'fas fa-sync mr-2' }),
                     React.createElement('span', { key: 'label' }, 'Refresh')
                 ]),
-                userRole === 'admin' && React.createElement('button', { key: 'add-event-btn', onClick: () => setShowEventForm(v => !v), className: 'bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all duration-300' }, [
+                userRole === 'admin' && React.createElement('button', { key: 'add-event-btn', onClick: () => { if (showEventForm) { setShowEventForm(false); resetForm(); } else { setShowEventForm(true); } }, className: 'bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all duration-300' }, [
                     React.createElement('i', { key: 'ai', className: 'fas fa-calendar-plus mr-2' }),
                     showEventForm ? 'Close' : 'Add Event'
                 ])
@@ -200,8 +238,8 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                 ])
             ]),
             React.createElement('div', { key: 'actions', className: 'mt-6 flex items-center gap-4' }, [
-                React.createElement('button', { key: 'save', onClick: saveEvent, disabled: isEventSaving, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50' }, isEventSaving ? 'Saving...' : 'Save Event'),
-                React.createElement('button', { key: 'cancel', onClick: () => setShowEventForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
+                React.createElement('button', { key: 'save', onClick: saveEvent, disabled: isEventSaving, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50' }, isEventSaving ? 'Saving...' : (editingEvent ? 'Update Event' : 'Save Event')),
+                React.createElement('button', { key: 'cancel', onClick: () => { setShowEventForm(false); resetForm(); }, className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
             ])
         ]),
 
@@ -345,8 +383,9 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                                         React.createElement('span', { key: 'label' }, 'Download')
                                     ]))
                                 ]),
-                                userRole === 'admin' && React.createElement('div', { key: 'admin-actions', className: 'mt-4' }, [
-                                    React.createElement('button', { key: 'del', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
+                                userRole === 'admin' && React.createElement('div', { key: 'admin-actions', className: 'mt-4 flex items-center gap-3' }, [
+                                    React.createElement('button', { key: 'edit', onClick: () => startEditEvent(event), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'ei', className: 'fas fa-edit mr-1' }), 'Modify']),
+                                    React.createElement('button', { key: 'del', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'di', className: 'fas fa-trash mr-1' }), 'Delete'])
                                 ])
                             ]);
                         }))
@@ -415,8 +454,9 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                                     }, `${event.time} • ${event.location}`)
                                 ])
                             ]),
-                            userRole === 'admin' && React.createElement('div', { key: 'padmin', className: 'mt-2' }, [
-                                React.createElement('button', { key: 'pdel', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'pi', className: 'fas fa-trash mr-1' }), 'Delete'])
+                            userRole === 'admin' && React.createElement('div', { key: 'padmin', className: 'mt-2 flex items-center gap-3' }, [
+                                React.createElement('button', { key: 'pedit', onClick: () => startEditEvent(event), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'pei', className: 'fas fa-edit mr-1' }), 'Modify']),
+                                React.createElement('button', { key: 'pdel', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'pdi', className: 'fas fa-trash mr-1' }), 'Delete'])
                             ])
                         ]);
                     }))
