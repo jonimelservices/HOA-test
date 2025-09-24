@@ -1,4 +1,5 @@
 const { useState, useEffect } = React;
+import { supa } from '../../utils/supabase.js';
 
 export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) => {
     const [events, setEvents] = useState([]);
@@ -11,7 +12,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
     const fetchEvents = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await window.supabaseClient.from('events').select('*');
+            const { data, error } = await supa(() => window.supabaseClient.from('events').select('*'));
             if (error) {
                 console.error("Error fetching events:", error);
                 showNotification("Error fetching events.");
@@ -109,9 +110,9 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
             if (eventForm.attachment) {
                 const bucket = 'event-attachments';
                 const unique = `${Date.now()}_${eventForm.attachment.name}`;
-                const { error: upErr } = await window.supabaseClient.storage
+                const { error: upErr } = await supa(() => window.supabaseClient.storage
                     .from(bucket)
-                    .upload(unique, eventForm.attachment, { upsert: true, contentType: eventForm.attachment.type || 'application/octet-stream' });
+                    .upload(unique, eventForm.attachment, { upsert: true, contentType: eventForm.attachment.type || 'application/octet-stream' }));
                 if (upErr) throw upErr;
                 const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
                 attachment_url = pub?.publicUrl || null;
@@ -131,17 +132,17 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                     location: eventForm.location || null
                 };
                 if (attachment_url) updPayload.attachment_url = attachment_url;
-                const upd = await window.supabaseClient.from('events').update(updPayload).eq('id', editingEvent.id);
+                const upd = await supa(() => window.supabaseClient.from('events').update(updPayload).eq('id', editingEvent.id));
                 if (upd.error) throw upd.error;
                 showNotification('Event updated.');
             } else {
-                const ins = await window.supabaseClient.from('events').insert({
+                const ins = await supa(() => window.supabaseClient.from('events').insert({
                     title: eventForm.title,
                     date: eventForm.date,
                     time: eventForm.time || null,
                     location: eventForm.location || null,
                     attachment_url
-                });
+                }));
                 if (ins.error) throw ins.error;
                 showNotification('Event added.');
             }
@@ -162,7 +163,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
             if (m) {
                 try { await window.supabaseClient.storage.from(m[1]).remove([m[2]]); } catch (_) {}
             }
-            const { error } = await window.supabaseClient.from('events').delete().eq('id', eventRow.id);
+            const { error } = await supa(() => window.supabaseClient.from('events').delete().eq('id', eventRow.id));
             if (error) throw error;
             showNotification('Event deleted.');
             fetchEvents();
