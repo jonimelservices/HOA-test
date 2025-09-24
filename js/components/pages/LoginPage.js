@@ -33,10 +33,12 @@ export const LoginPage = ({ theme, onLogin, showNotification, onNavigate }) => {
                 return;
             }
 
+            const displayName = (user.user_metadata && (user.user_metadata.name || user.user_metadata.full_name)) || '';
             const minimalProfile = {
                 id: user.id,
                 email: user.email || null,
-                full_name: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || null
+                first_name: displayName ? displayName.split(' ')[0] : null,
+                last_name: displayName ? displayName.split(' ').slice(1).join(' ') || null : null
             };
 
             // Attempt to create profile; proceed regardless of immediate fetch
