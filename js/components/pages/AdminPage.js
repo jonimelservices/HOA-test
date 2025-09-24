@@ -114,7 +114,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         try {
             const { data, error } = await window.supabaseClient
                 .from('users')
-                .select('id, email, role, full_name, first_name, last_name, address, phone')
+                .select('id, email, role, first_name, last_name, address, phone')
                 .neq('role', 'admin');
             if (error) {
                 console.error('Error loading users:', error.message || error);
@@ -126,8 +126,8 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     id: u.id,
                     email: u.email || '',
                     role: u.role || 'member',
-                    first_name: (u.first_name ?? (u.full_name ? (u.full_name.split(' ')[0] || '') : '')) || '',
-                    last_name: (u.last_name ?? (u.full_name ? (u.full_name.split(' ').slice(1).join(' ') || '') : '')) || '',
+                    first_name: u.first_name || '',
+                    last_name: u.last_name || '',
                     address: u.address || '',
                     phone: u.phone || ''
                 }));
@@ -164,7 +164,6 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const saveUser = async () => {
         const payloadFull = {
             email: userForm.email || null,
-            full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim() || null,
             first_name: userForm.first_name || null,
             last_name: userForm.last_name || null,
             address: userForm.address || null,
@@ -173,7 +172,8 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         };
         const payloadMinimal = {
             email: userForm.email || null,
-            full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim() || null,
+            first_name: userForm.first_name || null,
+            last_name: userForm.last_name || null,
             role: userForm.role || 'member'
         };
         try {
@@ -197,7 +197,8 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                         const res = await window.supabaseClient.functions.invoke('create-user', {
                             body: JSON.stringify({
                                 email: userForm.email,
-                                full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim(),
+                                first_name: userForm.first_name || null,
+                                last_name: userForm.last_name || null,
                                 role: userForm.role || 'member'
                             })
                         });
@@ -208,7 +209,8 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                         const res2 = await window.supabaseClient.functions.invoke('admin-create-user', {
                             body: JSON.stringify({
                                 email: userForm.email,
-                                full_name: `${userForm.first_name || ''} ${userForm.last_name || ''}`.trim(),
+                                first_name: userForm.first_name || null,
+                                last_name: userForm.last_name || null,
                                 role: userForm.role || 'member'
                             })
                         });
@@ -307,14 +309,13 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         for (const u of users) {
             const payloadFull = {
                 email: u.email || null,
-                full_name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || null,
                 first_name: u.first_name || null,
                 last_name: u.last_name || null,
                 address: u.address || null,
                 phone: u.phone || null,
                 role: u.role || 'member'
             };
-            const payloadMinimal = { email: u.email || null, full_name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || null, role: u.role || 'member' };
+            const payloadMinimal = { email: u.email || null, first_name: u.first_name || null, last_name: u.last_name || null, role: u.role || 'member' };
             try {
                 if (!u.email) throw new Error('Missing email');
                 let { error } = await window.supabaseClient.from('users').insert(payloadFull);
