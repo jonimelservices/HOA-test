@@ -205,6 +205,16 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
 
     useEffect(() => {
         if (activeTab === 'user') fetchReadOnlyUsers();
+        let channel = null;
+        if (activeTab === 'user') {
+            channel = window.supabaseClient
+                .channel('users-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+                    fetchReadOnlyUsers();
+                })
+                .subscribe();
+        }
+        return () => { if (channel) { try { window.supabaseClient.removeChannel(channel); } catch (_) {} } };
     }, [activeTab]);
 
     const openAddUser = () => {
