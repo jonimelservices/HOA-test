@@ -15,7 +15,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     const fetchDocuments = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await window.supabaseClient.from('documents').select('*');
+            const { data, error } = await supa(() => window.supabaseClient.from('documents').select('*'));
             if (error) {
                 console.error("Error fetching documents:", error);
                 showNotification("Error fetching documents.");
