@@ -81,7 +81,9 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
         try {
             const bucket = 'hoa-documents';
             const unique = `${Date.now()}_${docForm.file.name}`;
-            const { error: upErr } = await window.supabaseClient.storage.from(bucket).upload(unique, docForm.file);
+            const { error: upErr } = await window.supabaseClient.storage
+                .from(bucket)
+                .upload(unique, docForm.file, { upsert: true, contentType: docForm.file.type || 'application/octet-stream' });
             if (upErr) throw upErr;
             const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
             const url = pub?.publicUrl || '';
