@@ -21,18 +21,24 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
 
     // Try uploading to any available bucket; fall back gracefully if none exist or policy forbids
     const uploadAssetToAnyBucket = async (fileOrBlob, filename, contentType) => {
-        const candidates = ['hoa-documents', 'event-attachments', 'public', 'assets', 'site-assets'];
+        // Keep attempts bounded and timeouts short to avoid UI hanging
+        const candidates = ['site-assets', 'public'];
         for (const bucket of candidates) {
             try {
-                const res = await supa(() => window.supabaseClient.storage
-                    .from(bucket)
-                    .upload(filename, fileOrBlob, { upsert: true, contentType: contentType || 'application/octet-stream' }), { timeoutMs: 30000 });
+                const res = await supa(
+                    () => window.supabaseClient.storage
+                        .from(bucket)
+                        .upload(filename, fileOrBlob, { upsert: true, contentType: contentType || 'application/octet-stream' }),
+                    { timeoutMs: 6000 }
+                );
                 if (res && !res.error) {
                     const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(filename);
                     return { url: pub?.publicUrl || null, bucket };
                 }
-                const msg = (res && res.error && (res.error.message || '')) || '';
-                if (/bucket.*not.*found/i.test(msg)) continue;
+                if (res && res.error) {
+                    const msg = String(res.error.message || '');
+                    if (/bucket.*not.*found/i.test(msg) || /not found/i.test(msg) || /404/.test(msg)) continue;
+                }
             } catch (_) {
                 // continue trying next bucket
             }
