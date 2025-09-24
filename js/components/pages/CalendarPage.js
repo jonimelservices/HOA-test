@@ -109,7 +109,9 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
             if (eventForm.attachment) {
                 const bucket = 'event-attachments';
                 const unique = `${Date.now()}_${eventForm.attachment.name}`;
-                const { error: upErr } = await window.supabaseClient.storage.from(bucket).upload(unique, eventForm.attachment);
+                const { error: upErr } = await window.supabaseClient.storage
+                    .from(bucket)
+                    .upload(unique, eventForm.attachment, { upsert: true, contentType: eventForm.attachment.type || 'application/octet-stream' });
                 if (upErr) throw upErr;
                 const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
                 attachment_url = pub?.publicUrl || null;
