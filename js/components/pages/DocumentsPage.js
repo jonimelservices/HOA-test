@@ -1,4 +1,4 @@
-import { logAccess } from '../../utils/supabase.js';
+import { logAccess, supa } from '../../utils/supabase.js';
 
 const { useState, useEffect } = React;
 
