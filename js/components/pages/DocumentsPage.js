@@ -114,7 +114,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
             if (m) {
                 try { await window.supabaseClient.storage.from(m[1]).remove([m[2]]); } catch (_) {}
             }
-            const { error } = await window.supabaseClient.from('documents').delete().eq('id', doc.id);
+            const { error } = await supa(() => window.supabaseClient.from('documents').delete().eq('id', doc.id));
             if (error) throw error;
             showNotification('Document deleted.');
             fetchDocuments();
