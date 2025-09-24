@@ -2,6 +2,7 @@ import { themeClasses } from '../../utils/themes.js';
 import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 
 const { useState, useEffect, useRef } = React;
+import { supa } from '../../utils/supabase.js';
 
 export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, showNotification, onNavigate }) => {
     const [localConfig, setLocalConfig] = useState(config || {});
