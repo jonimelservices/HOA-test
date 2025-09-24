@@ -46,6 +46,14 @@ export const App = () => {
         };
         fetchConfig();
 
+        // Realtime: refresh config when table changes
+        const cfgChannel = window.supabaseClient
+            .channel('configuration-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'configuration' }, () => {
+                fetchConfig();
+            })
+            .subscribe();
+
         const { data: authListener } = window.supabaseClient.auth.onAuthStateChange(
             async (event, session) => {
                 if (session?.user) {
@@ -57,6 +65,7 @@ export const App = () => {
                     if (userData) {
                         setUser(userData);
                         setUserRole(userData.role);
+                        try { await fetchConfig(); } catch (_) {}
                     }
                 } else {
                     setUser(null);
@@ -67,6 +76,7 @@ export const App = () => {
 
         return () => {
             authListener.subscription.unsubscribe();
+            try { window.supabaseClient.removeChannel(cfgChannel); } catch (_) {}
         };
     }, []);
 
