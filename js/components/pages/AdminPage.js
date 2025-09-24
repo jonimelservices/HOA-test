@@ -22,14 +22,23 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
         setLocalConfig(prev => ({ ...prev, [name]: value }));
     };
     
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setLocalConfig(prev => ({ ...prev, heroImageUrl: reader.result }));
-            };
-            reader.readAsDataURL(file);
+    const handleImageUpload = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        try {
+            const bucket = 'site-assets';
+            const unique = `hero_${Date.now()}_${file.name}`;
+            const { error: upErr } = await supa(() => window.supabaseClient.storage
+                .from(bucket)
+                .upload(unique, file, { upsert: true, contentType: file.type || 'image/jpeg' }), { timeoutMs: 30000 });
+            if (upErr) throw upErr;
+            const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
+            const url = pub?.publicUrl || '';
+            setLocalConfig(prev => ({ ...prev, heroImageUrl: url }));
+            showNotification('Hero image uploaded.');
+        } catch (err) {
+            console.error('Hero image upload error:', err);
+            showNotification('Failed to upload hero image.');
         }
     };
 
@@ -65,17 +74,35 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const handleSave = async () => {
         try {
             // Save configuration and theme
+            let heroUrl = localConfig.heroImageUrl || null;
+            if (heroUrl && /^data:image\//.test(heroUrl)) {
+                try {
+                    const mime = (heroUrl.match(/^data:(image\/[^;]+);/) || [])[1] || 'image/png';
+                    const b64 = heroUrl.split(',')[1] || '';
+                    const byteChars = atob(b64);
+                    const byteNumbers = new Array(byteChars.length);
+                    for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+                    const blob = new Blob([new Uint8Array(byteNumbers)], { type: mime });
+                    const unique = `hero_${Date.now()}.${(mime.split('/')[1] || 'png')}`;
+                    const up = await supa(() => window.supabaseClient.storage.from('site-assets').upload(unique, blob, { upsert: true, contentType: mime }), { timeoutMs: 30000 });
+                    if (up && up.error) throw up.error;
+                    const { data: pub } = window.supabaseClient.storage.from('site-assets').getPublicUrl(unique);
+                    heroUrl = (pub && pub.publicUrl) ? pub.publicUrl : heroUrl;
+                } catch (e) {
+                    console.error('Hero image migration error:', e);
+                }
+            }
             const { error } = await supa(() => window.supabaseClient
                 .from('configuration')
                 .upsert({
                     id: 1,
                     hoaName: localConfig.hoaName,
-                    heroImageUrl: localConfig.heroImageUrl,
+                    heroImageUrl: heroUrl,
                     managementCompanyInfo: localConfig.managementCompanyInfo,
                     contactInfo: localConfig.contactInfo,
                     boardMembers: localConfig.boardMembers,
                     themeName: localThemeName
-                 }, { onConflict: 'id' }));
+                }, { onConflict: 'id' }), { timeoutMs: 30000 });
 
             if (error) throw error;
             setConfig(localConfig);
