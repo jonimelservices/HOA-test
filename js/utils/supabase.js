@@ -3,12 +3,15 @@ export const supabase = window.supabaseClient;
 
 // Generic helpers to improve reliability of Supabase calls
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const withTimeout = async (promise, ms) => {
+const withTimeout = (promise, ms) => {
   let t;
-  return Promise.race([
-    promise.finally(() => clearTimeout(t)),
-    new Promise((_, reject) => { t = setTimeout(() => reject(new Error('Request timed out')), ms); }),
-  ]);
+  return new Promise((resolve, reject) => {
+    t = setTimeout(() => reject(new Error('Request timed out')), ms);
+    Promise.resolve(promise).then(
+      (value) => { clearTimeout(t); resolve(value); },
+      (err) => { clearTimeout(t); reject(err); }
+    );
+  });
 };
 const withRetry = async (fn, { retries = 2, backoffMs = 400 } = {}) => {
   let lastErr;
@@ -18,7 +21,7 @@ const withRetry = async (fn, { retries = 2, backoffMs = 400 } = {}) => {
   throw lastErr;
 };
 export const supa = async (op, { timeoutMs = 12000, retries = 2 } = {}) => {
-  return withRetry(() => withTimeout(op(), timeoutMs), { retries });
+  return withRetry(() => withTimeout(Promise.resolve().then(op), timeoutMs), { retries });
 };
 
 export const triggerNotification = async (type, subject, showNotification) => {
