@@ -16,6 +16,8 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const [isBulkUploading, setIsBulkUploading] = useState(false);
     const fileInputRef = useRef(null);
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
 
     // Try uploading to any available bucket; fall back gracefully if none exist or policy forbids
     const uploadAssetToAnyBucket = async (fileOrBlob, filename, contentType) => {
@@ -732,12 +734,12 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                             React.createElement('tbody', { key: 'body', className: 'bg-white divide-y divide-gray-200' },
                                 userRows.map((row, idx) => React.createElement('tr', { key: row.id || idx, className: 'hover:bg-gray-50 transition-colors duration-200' }, [
                                     React.createElement('td', { key: 'name', className: 'px-6 py-4' }, React.createElement('div', { className: 'text-sm font-semibold text-gray-900' }, `${row.first_name || ''} ${row.last_name || ''}`.trim() || '—')),
-                                    React.createElement('td', { key: 'address', className: 'px-6 py-4 text-sm text-gray-600' }, row.address || '���'),
+                                    React.createElement('td', { key: 'address', className: 'px-6 py-4 text-sm text-gray-600' }, row.address || '—'),
                                     React.createElement('td', { key: 'phone', className: 'px-6 py-4 text-sm text-gray-600' }, row.phone || '—'),
                                     React.createElement('td', { key: 'email', className: 'px-6 py-4 text-sm text-gray-600' }, row.email || '—'),
                                     React.createElement('td', { key: 'act', className: 'px-6 py-4' }, React.createElement('div', { className: 'flex items-center gap-3' }, [
                                         React.createElement('button', { key: 'edit', onClick: () => openEditUser(row), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-edit mr-1' }), 'Modify']),
-                                        React.createElement('button', { key: 'del', onClick: () => deleteUser(row), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
+                                        React.createElement('button', { key: 'del', onClick: () => { setDeleteCandidate(row); setShowDeleteConfirm(true); }, className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
                                     ]))
                                 ]))
                             )
@@ -886,6 +888,23 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
             cancelLabel: 'Cancel',
             onConfirm: async () => { setShowSaveConfirm(false); await handleSave(); },
             onCancel: () => setShowSaveConfirm(false)
+        }),
+        showDeleteConfirm && React.createElement(ConfirmationModal, {
+            key: 'confirm-delete-user',
+            theme: theme,
+            title: 'Delete User',
+            message: 'Are you sure you want to delete this user? This action cannot be undone.',
+            confirmLabel: 'Delete',
+            cancelLabel: 'Cancel',
+            onConfirm: async () => {
+                const target = deleteCandidate;
+                setShowDeleteConfirm(false);
+                setDeleteCandidate(null);
+                if (target) {
+                    await deleteUser(target);
+                }
+            },
+            onCancel: () => { setShowDeleteConfirm(false); setDeleteCandidate(null); }
         })
     ]);
 };
