@@ -17,6 +17,27 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const fileInputRef = useRef(null);
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
+    // Try uploading to any available bucket; fall back gracefully if none exist or policy forbids
+    const uploadAssetToAnyBucket = async (fileOrBlob, filename, contentType) => {
+        const candidates = ['hoa-documents', 'event-attachments', 'public', 'assets', 'site-assets'];
+        for (const bucket of candidates) {
+            try {
+                const res = await supa(() => window.supabaseClient.storage
+                    .from(bucket)
+                    .upload(filename, fileOrBlob, { upsert: true, contentType: contentType || 'application/octet-stream' }), { timeoutMs: 30000 });
+                if (res && !res.error) {
+                    const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(filename);
+                    return { url: pub?.publicUrl || null, bucket };
+                }
+                const msg = (res && res.error && (res.error.message || '')) || '';
+                if (/bucket.*not.*found/i.test(msg)) continue;
+            } catch (_) {
+                // continue trying next bucket
+            }
+        }
+        return { url: null, bucket: null };
+    };
+
     const handleConfigChange = (e) => {
         const { name, value } = e.target;
         setLocalConfig(prev => ({ ...prev, [name]: value }));
@@ -25,20 +46,26 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const handleImageUpload = async (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
+        const unique = `hero_${Date.now()}_${file.name}`;
         try {
-            const bucket = 'site-assets';
-            const unique = `hero_${Date.now()}_${file.name}`;
-            const { error: upErr } = await supa(() => window.supabaseClient.storage
-                .from(bucket)
-                .upload(unique, file, { upsert: true, contentType: file.type || 'image/jpeg' }), { timeoutMs: 30000 });
-            if (upErr) throw upErr;
-            const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
-            const url = pub?.publicUrl || '';
-            setLocalConfig(prev => ({ ...prev, heroImageUrl: url }));
-            showNotification('Hero image uploaded.');
+            const { url } = await uploadAssetToAnyBucket(file, unique, file.type || 'image/jpeg');
+            if (url) {
+                setLocalConfig(prev => ({ ...prev, heroImageUrl: url }));
+                showNotification('Hero image uploaded.');
+                return;
+            }
+        } catch (_) {}
+        // Fallback to embedding as data URL if no bucket was available
+        try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLocalConfig(prev => ({ ...prev, heroImageUrl: String(reader.result || '') }));
+                showNotification('Stored image inline (no storage bucket available).');
+            };
+            reader.readAsDataURL(file);
         } catch (err) {
-            console.error('Hero image upload error:', err);
-            showNotification('Failed to upload hero image.');
+            console.error('Hero image handling error:', err);
+            showNotification('Could not process hero image.');
         }
     };
 
@@ -84,12 +111,14 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
                     const blob = new Blob([new Uint8Array(byteNumbers)], { type: mime });
                     const unique = `hero_${Date.now()}.${(mime.split('/')[1] || 'png')}`;
-                    const up = await supa(() => window.supabaseClient.storage.from('site-assets').upload(unique, blob, { upsert: true, contentType: mime }), { timeoutMs: 30000 });
-                    if (up && up.error) throw up.error;
-                    const { data: pub } = window.supabaseClient.storage.from('site-assets').getPublicUrl(unique);
-                    heroUrl = (pub && pub.publicUrl) ? pub.publicUrl : heroUrl;
+                    const uploaded = await uploadAssetToAnyBucket(blob, unique, mime);
+                    if (uploaded.url) {
+                        heroUrl = uploaded.url;
+                    } else {
+                        console.warn('Hero image migration skipped: no suitable storage bucket. Keeping inline image.');
+                    }
                 } catch (e) {
-                    console.error('Hero image migration error:', e);
+                    console.warn('Hero image migration error (kept inline):', e && (e.message || e));
                 }
             }
             const { error } = await supa(() => window.supabaseClient
@@ -703,7 +732,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                             React.createElement('tbody', { key: 'body', className: 'bg-white divide-y divide-gray-200' },
                                 userRows.map((row, idx) => React.createElement('tr', { key: row.id || idx, className: 'hover:bg-gray-50 transition-colors duration-200' }, [
                                     React.createElement('td', { key: 'name', className: 'px-6 py-4' }, React.createElement('div', { className: 'text-sm font-semibold text-gray-900' }, `${row.first_name || ''} ${row.last_name || ''}`.trim() || '—')),
-                                    React.createElement('td', { key: 'address', className: 'px-6 py-4 text-sm text-gray-600' }, row.address || '—'),
+                                    React.createElement('td', { key: 'address', className: 'px-6 py-4 text-sm text-gray-600' }, row.address || '���'),
                                     React.createElement('td', { key: 'phone', className: 'px-6 py-4 text-sm text-gray-600' }, row.phone || '—'),
                                     React.createElement('td', { key: 'email', className: 'px-6 py-4 text-sm text-gray-600' }, row.email || '—'),
                                     React.createElement('td', { key: 'act', className: 'px-6 py-4' }, React.createElement('div', { className: 'flex items-center gap-3' }, [
