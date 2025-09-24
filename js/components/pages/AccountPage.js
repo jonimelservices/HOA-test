@@ -17,8 +17,9 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
         try {
             const { error } = await window.supabaseClient
                 .from('users')
-                .update({ 
-                    full_name: formData.full_name, 
+                .update({
+                    first_name: formData.first_name || null,
+                    last_name: formData.last_name || null,
                     email: formData.email,
                     notify_new_documents: formData.notify_new_documents,
                     notify_new_meetings: formData.notify_new_meetings
@@ -119,15 +120,33 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                         React.createElement('label', {
                             key: "name-label",
                             className: "block text-lg font-bold text-gray-700"
-                        }, "Full Name"),
+                        }, "First Name"),
                         React.createElement('input', {
                             key: "name-input",
                             type: "text",
-                            name: "full_name",
-                            value: formData.full_name || '',
+                            name: "first_name",
+                            value: formData.first_name || '',
                             onChange: handleInputChange,
                             className: "modern-input w-full text-lg",
-                            placeholder: "Enter your full name"
+                            placeholder: "Enter your first name"
+                        })
+                    ]),
+                    React.createElement('div', {
+                        key: "last-name-field",
+                        className: "space-y-3"
+                    }, [
+                        React.createElement('label', {
+                            key: "last-name-label",
+                            className: "block text-lg font-bold text-gray-700"
+                        }, "Last Name"),
+                        React.createElement('input', {
+                            key: "last-name-input",
+                            type: "text",
+                            name: "last_name",
+                            value: formData.last_name || '',
+                            onChange: handleInputChange,
+                            className: "modern-input w-full text-lg",
+                            placeholder: "Enter your last name"
                         })
                     ]),
                     React.createElement('div', {
