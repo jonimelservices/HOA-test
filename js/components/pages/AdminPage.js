@@ -65,7 +65,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const handleSave = async () => {
         try {
             // Save configuration and theme
-            const { error } = await window.supabaseClient
+            const { error } = await supa(() => window.supabaseClient
                 .from('configuration')
                 .upsert({
                     id: 1,
@@ -75,7 +75,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     contactInfo: localConfig.contactInfo,
                     boardMembers: localConfig.boardMembers,
                     themeName: localThemeName
-                 }, { onConflict: 'id' });
+                 }, { onConflict: 'id' }));
 
             if (error) throw error;
             setConfig(localConfig);
@@ -176,10 +176,10 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
     const fetchReadOnlyUsers = async () => {
         setIsUsersLoading(true);
         try {
-            const { data, error } = await window.supabaseClient
+            const { data, error } = await supa(() => window.supabaseClient
                 .from('users')
                 .select('id, email, role, first_name, last_name, address, phone')
-                .neq('role', 'admin');
+                .neq('role', 'admin'));
             if (error) {
                 console.error('Error loading users:', error.message || error);
                 setUserRows([]);
