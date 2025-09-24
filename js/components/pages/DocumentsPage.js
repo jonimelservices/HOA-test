@@ -88,13 +88,13 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
             const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
             const url = pub?.publicUrl || '';
             const sizeLabel = `${docForm.file.size} bytes`;
-            const ins = await window.supabaseClient.from('documents').insert({
+            const ins = await supa(() => window.supabaseClient.from('documents').insert({
                 name: docForm.name,
                 category: docForm.category || null,
                 url,
                 size: sizeLabel,
                 lastUpdated: new Date().toISOString()
-            });
+            }));
             if (ins.error) throw ins.error;
             showNotification('Document added.');
             setShowDocForm(false);
