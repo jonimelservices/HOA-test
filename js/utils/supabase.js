@@ -1,6 +1,26 @@
 // Access the global Supabase client
 export const supabase = window.supabaseClient;
 
+// Generic helpers to improve reliability of Supabase calls
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const withTimeout = async (promise, ms) => {
+  let t;
+  return Promise.race([
+    promise.finally(() => clearTimeout(t)),
+    new Promise((_, reject) => { t = setTimeout(() => reject(new Error('Request timed out')), ms); }),
+  ]);
+};
+const withRetry = async (fn, { retries = 2, backoffMs = 400 } = {}) => {
+  let lastErr;
+  for (let i = 0; i <= retries; i++) {
+    try { return await fn(); } catch (e) { lastErr = e; if (i < retries) await sleep(backoffMs * Math.pow(2, i)); }
+  }
+  throw lastErr;
+};
+export const supa = async (op, { timeoutMs = 12000, retries = 2 } = {}) => {
+  return withRetry(() => withTimeout(op(), timeoutMs), { retries });
+};
+
 export const triggerNotification = async (type, subject, showNotification) => {
     try {
         const { error } = await supabase.functions.invoke('send-notifications', {
