@@ -63,9 +63,10 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
 
     const handleSave = async () => {
         try {
+            // Save configuration and theme
             const { error } = await window.supabaseClient
                 .from('configuration')
-                .upsert({ 
+                .upsert({
                     id: 1,
                     hoaName: localConfig.hoaName,
                     heroImageUrl: localConfig.heroImageUrl,
@@ -75,15 +76,77 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                     themeName: localThemeName
                  }, { onConflict: 'id' });
 
-            if (error) {
-                showNotification("Error saving settings: " + error.message);
-            } else {
-                setConfig(localConfig);
-                setThemeName(localThemeName);
-                showNotification("Admin settings saved successfully!");
+            if (error) throw error;
+            setConfig(localConfig);
+            setThemeName(localThemeName);
+
+            // If user form is open, persist user changes as part of Save All
+            if (showUserForm && (editingUserId || userForm.email)) {
+                const payloadFull = {
+                    email: userForm.email || null,
+                    first_name: userForm.first_name || null,
+                    last_name: userForm.last_name || null,
+                    address: userForm.address || null,
+                    phone: userForm.phone || null,
+                    role: userForm.role || 'member'
+                };
+
+                if (editingUserId) {
+                    let { error: uerr } = await window.supabaseClient.from('users').update(payloadFull).eq('id', editingUserId);
+                    if (uerr) throw uerr;
+                    showNotification('User updated.');
+                } else if (userForm.email) {
+                    // Try to create Auth user via Edge Function, else fallback to profile row only
+                    try {
+                        let createData = null; let createErr = null;
+                        try {
+                            const res = await window.supabaseClient.functions.invoke('create-user', {
+                                body: JSON.stringify({
+                                    email: userForm.email,
+                                    first_name: userForm.first_name || null,
+                                    last_name: userForm.last_name || null,
+                                    role: userForm.role || 'member'
+                                })
+                            });
+                            createData = res.data; createErr = res.error || null;
+                        } catch (_) {}
+                        if (createErr || !createData?.user_id) {
+                            const res2 = await window.supabaseClient.functions.invoke('admin-create-user', {
+                                body: JSON.stringify({
+                                    email: userForm.email,
+                                    first_name: userForm.first_name || null,
+                                    last_name: userForm.last_name || null,
+                                    role: userForm.role || 'member'
+                                })
+                            });
+                            createData = res2.data; createErr = res2.error || null;
+                        }
+                        if (!createErr && createData?.user_id) {
+                            const up = await window.supabaseClient.from('users').upsert({ id: createData.user_id, ...payloadFull });
+                            if (up.error) throw up.error;
+                            showNotification('User account created and profile saved.');
+                        } else {
+                            // Fallback: profile row only
+                            const ins = await window.supabaseClient.from('users').insert(payloadFull);
+                            if (ins.error) throw ins.error;
+                            showNotification('User added.');
+                        }
+                    } catch (e) {
+                        // As a last resort, try upsert by email
+                        const upd = await window.supabaseClient.from('users').upsert(payloadFull, { onConflict: 'email' });
+                        if (upd.error) throw upd.error;
+                        showNotification('User saved.');
+                    }
+                }
+
+                setShowUserForm(false);
+                await fetchReadOnlyUsers();
             }
+
+            showNotification('Admin settings saved successfully!');
         } catch (error) {
-            showNotification("Error saving settings.");
+            console.error('Save all error:', error.message || error);
+            showNotification('Error saving settings.');
         }
     };
 
@@ -638,8 +701,7 @@ export const AdminPage = ({ config, setConfig, theme, themeName, setThemeName, s
                             ])
                         ]),
                         React.createElement('div', { key: 'form-actions', className: 'mt-6 flex items-center gap-4' }, [
-                            React.createElement('button', { key: 'save', onClick: saveUser, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1' }, [React.createElement('i', { key: 'i', className: 'fas fa-save mr-2' }), editingUserId ? 'Save Changes' : 'Add User']),
-                            React.createElement('button', { key: 'cancel', onClick: () => setShowUserForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
+                            React.createElement('button', { key: 'cancel', onClick: () => setShowUserForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Close (Use "Save All Changes")')
                         ])
                     ])
                 ]);
