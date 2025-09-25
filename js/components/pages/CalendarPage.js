@@ -428,6 +428,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                             className: "modern-card p-6 opacity-75 hover:opacity-90 transition-opacity duration-300"
                         }, [
                             React.createElement('div', {
+                                key: 'past-row-content',
                                 className: "flex items-center gap-4"
                             }, [
                                 React.createElement('div', {
