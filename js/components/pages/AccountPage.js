@@ -60,6 +60,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                 setNewPassword('');
                 setConfirmPassword('');
                 setShowPasswordConfirm(true);
+                try { alert('Done'); } catch (_) {}
             }
         } catch (error) {
             showNotification("Error changing password.");
