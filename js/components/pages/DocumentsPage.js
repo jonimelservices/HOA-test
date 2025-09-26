@@ -7,10 +7,10 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
-    const [dateFilter, setDateFilter] = useState('');
     const [showDocForm, setShowDocForm] = useState(false);
     const [docForm, setDocForm] = useState({ name: '', category: '', file: null });
     const [isDocSaving, setIsDocSaving] = useState(false);
+    const [editingDoc, setEditingDoc] = useState(null);
 
     const fetchDocuments = async () => {
         setIsLoading(true);
@@ -50,11 +50,16 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     }, []);
 
     const categories = ['All', ...new Set(documents.map(doc => doc.category))];
-    const filteredDocuments = documents.filter(doc =>
-        (filterCategory === 'All' || doc.category === filterCategory) &&
-        (doc.name || doc.title || '').toLowerCase().includes(searchTerm.toLowerCase()) &&
-        ((doc.lastUpdated || doc.updated_at || doc.created_at || '') + '').includes(dateFilter)
-    );
+    const filteredDocuments = documents.filter(doc => {
+        const search = searchTerm.trim().toLowerCase();
+        if (filterCategory !== 'All' && doc.category !== filterCategory) return false;
+        if (!search) return true;
+        const nameStr = String(doc.name || doc.title || '').toLowerCase();
+        const rawDate = doc.lastUpdated || doc.updated_at || doc.created_at || '';
+        const dateStr = rawDate ? new Date(rawDate).toLocaleDateString().toLowerCase() : '';
+        const rawStr = String(rawDate).toLowerCase();
+        return nameStr.includes(search) || dateStr.includes(search) || rawStr.includes(search);
+    });
 
     const handleDocumentAccess = (doc) => {
         if (user) {
@@ -72,37 +77,74 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
         }
     };
 
+    const startEditDocument = (doc) => {
+        setEditingDoc(doc);
+        setDocForm({ name: doc.name || doc.title || '', category: doc.category || '', file: null });
+        setShowDocForm(true);
+    };
+
     const saveDocument = async () => {
-        if (!docForm.name || !docForm.file) {
-            showNotification('Please provide a name and select a file.');
+        if (!docForm.name) {
+            showNotification('Please provide a name.');
             return;
         }
         setIsDocSaving(true);
         try {
             const bucket = 'hoa-documents';
-            const unique = `${Date.now()}_${docForm.file.name}`;
-            const { error: upErr } = await supa(() => window.supabaseClient.storage
-                .from(bucket)
-                .upload(unique, docForm.file, { upsert: true, contentType: docForm.file.type || 'application/octet-stream' }));
-            if (upErr) throw upErr;
-            const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
-            const url = pub?.publicUrl || '';
-            const sizeLabel = `${docForm.file.size} bytes`;
-            const ins = await supa(() => window.supabaseClient.from('documents').insert({
-                name: docForm.name,
-                category: docForm.category || null,
-                url,
-                size: sizeLabel,
-                lastUpdated: new Date().toISOString()
-            }));
-            if (ins.error) throw ins.error;
-            showNotification('Document added.');
+            let url = editingDoc?.url || editingDoc?.file_url || null;
+            let sizeLabel = editingDoc?.size || '';
+
+            if (docForm.file) {
+                const unique = `${Date.now()}_${docForm.file.name}`;
+                const { error: upErr } = await supa(() => window.supabaseClient.storage
+                    .from(bucket)
+                    .upload(unique, docForm.file, { upsert: true, contentType: docForm.file.type || 'application/octet-stream' }));
+                if (upErr) throw upErr;
+                const { data: pub } = window.supabaseClient.storage.from(bucket).getPublicUrl(unique);
+                url = pub?.publicUrl || '';
+                sizeLabel = `${docForm.file.size} bytes`;
+                if (editingDoc && (editingDoc.url || editingDoc.file_url)) {
+                    const m = String(editingDoc.url || editingDoc.file_url || '').match(/\/object\/public\/([^/]+)\/(.+)$/);
+                    if (m) {
+                        try { await window.supabaseClient.storage.from(m[1]).remove([m[2]]); } catch (_) {}
+                    }
+                }
+            }
+
+            if (editingDoc && editingDoc.id) {
+                const updPayload = {
+                    name: docForm.name,
+                    category: docForm.category || null,
+                    lastUpdated: new Date().toISOString()
+                };
+                if (url) updPayload.url = url;
+                if (sizeLabel) updPayload.size = sizeLabel;
+                const upd = await supa(() => window.supabaseClient.from('documents').update(updPayload).eq('id', editingDoc.id));
+                if (upd.error) throw upd.error;
+                showNotification('Document updated.');
+            } else {
+                if (!docForm.file) {
+                    showNotification('Please select a file.');
+                    setIsDocSaving(false);
+                    return;
+                }
+                const ins = await supa(() => window.supabaseClient.from('documents').insert({
+                    name: docForm.name,
+                    category: docForm.category || null,
+                    url,
+                    size: sizeLabel,
+                    lastUpdated: new Date().toISOString()
+                }));
+                if (ins.error) throw ins.error;
+                showNotification('Document added.');
+            }
             setShowDocForm(false);
+            setEditingDoc(null);
             setDocForm({ name: '', category: '', file: null });
             fetchDocuments();
         } catch (e) {
-            console.error('Add document error:', e);
-            showNotification('Failed to add document.');
+            console.error('Save document error:', e);
+            showNotification('Failed to save document.');
         } finally {
             setIsDocSaving(false);
         }
@@ -184,8 +226,8 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                 ])
             ]),
             React.createElement('div', { key: 'doc-actions', className: 'mt-6 flex items-center gap-4' }, [
-                React.createElement('button', { key: 'save-doc', onClick: saveDocument, disabled: isDocSaving, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50' }, isDocSaving ? 'Saving...' : 'Save Document'),
-                React.createElement('button', { key: 'cancel-doc', onClick: () => setShowDocForm(false), className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
+                React.createElement('button', { key: 'save-doc', onClick: saveDocument, disabled: isDocSaving, className: 'modern-button px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50' }, isDocSaving ? 'Saving...' : (editingDoc ? 'Update Document' : 'Save Document')),
+                React.createElement('button', { key: 'cancel-doc', onClick: () => { setShowDocForm(false); setEditingDoc(null); setDocForm({ name: '', category: '', file: null }); }, className: 'bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-300' }, 'Cancel')
             ])
         ]),
 
@@ -195,7 +237,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
         }, [
             React.createElement('div', {
                 key: "search-grid",
-                className: "grid md:grid-cols-3 gap-6"
+                className: "grid md:grid-cols-2 gap-6"
             }, [
                 React.createElement('div', {
                     key: "search-input",
@@ -211,23 +253,6 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                         placeholder: "Search documents...",
                         value: searchTerm,
                         onChange: e => setSearchTerm(e.target.value),
-                        className: "modern-input w-full pl-12 pr-4 py-3"
-                    })
-                ]),
-                React.createElement('div', {
-                    key: "date-input",
-                    className: "relative"
-                }, [
-                    React.createElement('i', {
-                        key: "date-icon",
-                        className: "fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    }),
-                    React.createElement('input', {
-                        key: "date",
-                        type: "text",
-                        placeholder: "Filter by date (YYYY-MM-DD)",
-                        value: dateFilter,
-                        onChange: e => setDateFilter(e.target.value),
                         className: "modern-input w-full pl-12 pr-4 py-3"
                     })
                 ]),
@@ -362,7 +387,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                                         React.createElement('i', { key: "download-icon", className: "fas fa-download" }),
                                         "Download"
                                     ]),
-                                    userRole === 'admin' && React.createElement('button', { key: 'del', onClick: () => deleteDocument(doc), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
+                                    userRole === 'admin' && React.createElement('button', { key: 'edit', onClick: () => startEditDocument(doc), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'ei', className: 'fas fa-edit mr-1' }), 'Modify']), userRole === 'admin' && React.createElement('button', { key: 'del', onClick: () => deleteDocument(doc), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
                                 ]))
                             ])
                         ))
