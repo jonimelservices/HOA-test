@@ -7,6 +7,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
     const [confirmPassword, setConfirmPassword] = useState('');
     const [activeTab, setActiveTab] = useState('profile');
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -58,6 +59,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                 showNotification("Password changed successfully!");
                 setNewPassword('');
                 setConfirmPassword('');
+                setShowPasswordConfirm(true);
             }
         } catch (error) {
             showNotification("Error changing password.");
@@ -437,6 +439,16 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
             cancelLabel: 'Cancel',
             onConfirm: async () => { setShowSaveConfirm(false); await handleSave(); },
             onCancel: () => setShowSaveConfirm(false)
+        }),
+        showPasswordConfirm && React.createElement(ConfirmationModal, {
+            key: 'confirm-password-changed',
+            theme: theme,
+            title: 'Password Changed',
+            message: 'Your password has been updated.',
+            confirmLabel: 'OK',
+            cancelLabel: 'Close',
+            onConfirm: () => setShowPasswordConfirm(false),
+            onCancel: () => setShowPasswordConfirm(false)
         })
     ]);
 };
