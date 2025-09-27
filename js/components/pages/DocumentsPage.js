@@ -1,6 +1,7 @@
 import { logAccess, supa } from '../../utils/supabase.js';
 
 const { useState, useEffect } = React;
+import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 
 export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavigate }) => {
     const [documents, setDocuments] = useState([]);
@@ -11,6 +12,8 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
     const [docForm, setDocForm] = useState({ name: '', category: '', file: null });
     const [isDocSaving, setIsDocSaving] = useState(false);
     const [editingDoc, setEditingDoc] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
 
     const fetchDocuments = async () => {
         setIsLoading(true);
@@ -389,11 +392,21 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                                         React.createElement('i', { key: "download-icon", className: "fas fa-download" }),
                                         "Download"
                                     ]),
-                                    userRole === 'admin' && React.createElement('button', { key: 'edit', onClick: () => startEditDocument(doc), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'ei', className: 'fas fa-edit mr-1' }), 'Modify']), userRole === 'admin' && React.createElement('button', { key: 'del', onClick: () => deleteDocument(doc), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
+                                    userRole === 'admin' && React.createElement('button', { key: 'edit', onClick: () => startEditDocument(doc), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'ei', className: 'fas fa-edit mr-1' }), 'Modify']), userRole === 'admin' && React.createElement('button', { key: 'del', onClick: () => { setDeleteCandidate(doc); setShowDeleteConfirm(true); }, className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'i', className: 'fas fa-trash mr-1' }), 'Delete'])
                                 ]))
                             ])
                         ))
                     ]))
-        ])
+        ]),
+        showDeleteConfirm && React.createElement(ConfirmationModal, {
+            key: 'confirm-delete-doc',
+            theme: theme,
+            title: 'Delete Document',
+            message: 'Are you sure you want to delete this document? This action cannot be undone.',
+            confirmLabel: 'Delete',
+            cancelLabel: 'Cancel',
+            onConfirm: async () => { const target = deleteCandidate; setShowDeleteConfirm(false); setDeleteCandidate(null); if (target) await deleteDocument(target); },
+            onCancel: () => { setShowDeleteConfirm(false); setDeleteCandidate(null); }
+        })
     ]);
 };
