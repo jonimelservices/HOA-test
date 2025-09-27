@@ -12,7 +12,7 @@ export const Header = ({ config, theme, userRole, onLogout, onNavigate }) => {
             }, [
                 React.createElement('div', {
                     key: "icon",
-                    className: `${theme.gradient} p-4 rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:-rotate-6`
+                    className: `${theme.gradient} p-4 rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300 logo-rotator`
                 }, React.createElement('i', {
                     className: "fas fa-home text-white text-2xl"
                 })),
