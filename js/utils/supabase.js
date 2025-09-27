@@ -20,7 +20,7 @@ const withRetry = async (fn, { retries = 2, backoffMs = 400 } = {}) => {
   }
   throw lastErr;
 };
-export const supa = async (op, { timeoutMs = 25000, retries = 2 } = {}) => {
+export const supa = async (op, { timeoutMs = 45000, retries = 1 } = {}) => {
   return withRetry(() => withTimeout(Promise.resolve().then(op), timeoutMs), { retries });
 };
 
