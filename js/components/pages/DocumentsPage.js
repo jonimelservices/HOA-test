@@ -49,7 +49,8 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
         };
     }, []);
 
-    const categories = ['All', ...new Set(documents.map(doc => doc.category))];
+    const categoryOptions = ['Governing Documents','Financial Documents','Contracts','Notices and Minutes','Structural and Safety','Other'];
+    const categories = ['All', ...categoryOptions];
     const filteredDocuments = documents.filter(doc => {
         const search = searchTerm.trim().toLowerCase();
         if (filterCategory !== 'All' && doc.category !== filterCategory) return false;
@@ -218,7 +219,10 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                 ]),
                 React.createElement('div', { key: 'category-field', className: 'space-y-2' }, [
                     React.createElement('label', { key: 'cat-label', className: 'block text-sm font-bold text-gray-700' }, 'Category'),
-                    React.createElement('input', { key: 'cat-input', type: 'text', name: 'category', value: docForm.category, onChange: handleDocInputChange, className: 'modern-input w-full' })
+                    React.createElement('select', { key: 'cat-select', name: 'category', value: docForm.category, onChange: handleDocInputChange, className: 'modern-input w-full appearance-none cursor-pointer' }, [
+                        React.createElement('option', { key: 'placeholder', value: '' }, 'Select Category'),
+                        ...categoryOptions.map(cat => React.createElement('option', { key: cat, value: cat }, cat))
+                    ])
                 ]),
                 React.createElement('div', { key: 'file-field', className: 'space-y-2' }, [
                     React.createElement('label', { key: 'file-label', className: 'block text-sm font-bold text-gray-700' }, 'File'),
@@ -271,9 +275,7 @@ export const DocumentsPage = ({ theme, user, userRole, showNotification, onNavig
                         className: "modern-input w-full pl-12 pr-4 py-3 appearance-none cursor-pointer"
                     }, [
                         React.createElement('option', { key: "all", value: "All" }, "All Categories"),
-                        ...categories.filter((v,i,a) => a.indexOf(v)===i && v !== 'All').map(cat => 
-                            React.createElement('option', { key: cat, value: cat }, cat)
-                        )
+                        ...categoryOptions.map(cat => React.createElement('option', { key: cat, value: cat }, cat))
                     ]),
                     React.createElement('i', {
                         key: "chevron",
