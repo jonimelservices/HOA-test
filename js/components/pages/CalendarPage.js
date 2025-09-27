@@ -1,5 +1,6 @@
 const { useState, useEffect } = React;
 import { supa } from '../../utils/supabase.js';
+import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 
 export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) => {
     const [events, setEvents] = useState([]);
@@ -8,6 +9,8 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
     const [isEventSaving, setIsEventSaving] = useState(false);
     const [eventForm, setEventForm] = useState({ title: '', date: '', time: '', location: '', attachment: null });
     const [editingEvent, setEditingEvent] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
 
     const fetchEvents = async () => {
         setIsLoading(true);
@@ -388,7 +391,7 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                                 ]),
                                 userRole === 'admin' && React.createElement('div', { key: 'admin-actions', className: 'mt-4 flex items-center gap-3' }, [
                                     React.createElement('button', { key: 'edit', onClick: () => startEditEvent(event), className: 'bg-blue-50 text-blue-700 font-semibold px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200' }, [React.createElement('i', { key: 'ei', className: 'fas fa-edit mr-1' }), 'Modify']),
-                                    React.createElement('button', { key: 'del', onClick: () => deleteEvent(event), className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'di', className: 'fas fa-trash mr-1' }), 'Delete'])
+                                    React.createElement('button', { key: 'del', onClick: () => { setDeleteCandidate(event); setShowDeleteConfirm(true); }, className: 'bg-red-50 text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200' }, [React.createElement('i', { key: 'di', className: 'fas fa-trash mr-1' }), 'Delete'])
                                 ])
                             ]);
                         }))
@@ -465,6 +468,16 @@ export const CalendarPage = ({ theme, userRole, showNotification, onNavigate }) 
                         ]);
                     }))
                 ])
-            ])
+            ]),
+        showDeleteConfirm && React.createElement(ConfirmationModal, {
+            key: 'confirm-delete-event',
+            theme: theme,
+            title: 'Delete Event',
+            message: 'Are you sure you want to delete this event? This action cannot be undone.',
+            confirmLabel: 'Delete',
+            cancelLabel: 'Cancel',
+            onConfirm: async () => { const target = deleteCandidate; setShowDeleteConfirm(false); setDeleteCandidate(null); if (target) await deleteEvent(target); },
+            onCancel: () => { setShowDeleteConfirm(false); setDeleteCandidate(null); }
+        })
     ]);
 };
