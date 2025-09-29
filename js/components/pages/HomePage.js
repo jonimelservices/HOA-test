@@ -37,7 +37,7 @@ export const HomePage = ({ config, theme, onNavigate, showNotification }) => {
             }, [
                 React.createElement('h1', {
                     key: "title",
-                    className: "text-6xl md:text-8xl font-black mb-8 leading-tight"
+                    className: "text-[70px] md:text-[96px] font-black mb-8 leading-tight"
                 }, [
                     React.createElement('span', { key: "welcome-text" }, "Welcome to "),
                     React.createElement('span', {
