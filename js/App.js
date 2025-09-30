@@ -262,7 +262,7 @@ export const App = () => {
             message: notification,
             onDismiss: () => setNotification('')
         }),
-        !isLoading && config && React.createElement(Header, {
+        currentPage !== 'password-update' && !isLoading && config && React.createElement(Header, {
             key: "header",
             config: config,
             theme: activeTheme,
