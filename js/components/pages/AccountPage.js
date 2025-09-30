@@ -5,7 +5,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
     const [formData, setFormData] = useState(user || {});
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState(initialTab || 'profile');
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
