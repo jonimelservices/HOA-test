@@ -388,7 +388,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
             key: "content",
             className: "grid lg:grid-cols-4 gap-8"
         }, [
-            React.createElement('div', {
+            !restrictSecurityOnly && React.createElement('div', {
                 key: "sidebar",
                 className: "lg:col-span-1"
             }, React.createElement('div', {
