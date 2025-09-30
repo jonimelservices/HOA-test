@@ -421,7 +421,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                     key: "tab-content",
                     className: "modern-card p-10"
                 }, renderTabContent()),
-                (activeTab === 'profile' || activeTab === 'notifications') && React.createElement('div', {
+                !restrictSecurityOnly && (activeTab === 'profile' || activeTab === 'notifications') && React.createElement('div', {
                     key: "save-section",
                     className: "mt-8 text-center"
                 }, React.createElement('button', {
