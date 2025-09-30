@@ -415,7 +415,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
             ])),
             React.createElement('div', {
                 key: "main-content",
-                className: "lg:col-span-3"
+                className: restrictSecurityOnly ? "lg:col-span-4" : "lg:col-span-3"
             }, [
                 React.createElement('div', {
                     key: "tab-content",
