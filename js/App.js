@@ -8,6 +8,7 @@ import { LoginPage } from './components/pages/LoginPage.js';
 import { ResetPasswordPage } from './components/pages/ResetPasswordPage.js';
 import { DashboardPage } from './components/pages/DashboardPage.js';
 import { DocumentsPage } from './components/pages/DocumentsPage.js';
+import { PasswordUpdatePage } from './components/pages/PasswordUpdatePage.js';
 import { CalendarPage } from './components/pages/CalendarPage.js';
 import { AccountPage } from './components/pages/AccountPage.js';
 import { AdminPage } from './components/pages/AdminPage.js';
@@ -56,6 +57,10 @@ export const App = () => {
 
         const { data: authListener } = window.supabaseClient.auth.onAuthStateChange(
             async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    setCurrentPage('password-update');
+                    return;
+                }
                 if (session?.user) {
                     const { data: userData } = await window.supabaseClient
                         .from('users')
@@ -78,6 +83,15 @@ export const App = () => {
             authListener.subscription.unsubscribe();
             try { window.supabaseClient.removeChannel(cfgChannel); } catch (_) {}
         };
+    }, []);
+
+    useEffect(() => {
+        try {
+            const hash = window.location.hash || '';
+            if (hash.includes('type=recovery')) {
+                setCurrentPage('password-update');
+            }
+        } catch (_) {}
     }, []);
 
     useEffect(() => {
@@ -181,6 +195,12 @@ export const App = () => {
                 });
             case 'reset-password':
                 return React.createElement(ResetPasswordPage, {
+                    theme: activeTheme,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
+            case 'password-update':
+                return React.createElement(PasswordUpdatePage, {
                     theme: activeTheme,
                     showNotification: showNotification,
                     onNavigate: navigate
