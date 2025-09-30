@@ -1,7 +1,7 @@
 import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 const { useState } = React;
 
-export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate }) => {
+export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate, initialTab, restrictSecurityOnly, recoveryMode }) => {
     const [formData, setFormData] = useState(user || {});
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
