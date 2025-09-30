@@ -23,6 +23,9 @@ export const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
     const [userRole, setUserRole] = useState(null);
     const [user, setUser] = useState(null);
+    const [recoveryMode, setRecoveryMode] = useState(false);
+    const [accountInitialTab, setAccountInitialTab] = useState(null);
+    const [restrictSecurityOnly, setRestrictSecurityOnly] = useState(false);
     const [themeName, setThemeName] = useState('blue');
     const [config, setConfig] = useState(null);
     const [notification, setNotification] = useState('');
@@ -58,7 +61,10 @@ export const App = () => {
         const { data: authListener } = window.supabaseClient.auth.onAuthStateChange(
             async (event, session) => {
                 if (event === 'PASSWORD_RECOVERY') {
-                    setCurrentPage('password-update');
+                    setRecoveryMode(true);
+                    setAccountInitialTab('security');
+                    setRestrictSecurityOnly(true);
+                    setCurrentPage('account');
                     return;
                 }
                 if (session?.user) {
@@ -89,7 +95,12 @@ export const App = () => {
         try {
             const hash = window.location.hash || '';
             const path = window.location.pathname || '/';
-            if (hash.includes('type=recovery') || path === '/password-update') {
+            if (hash.includes('type=recovery')) {
+                setRecoveryMode(true);
+                setAccountInitialTab('security');
+                setRestrictSecurityOnly(true);
+                setCurrentPage('account');
+            } else if (path === '/password-update') {
                 setCurrentPage('password-update');
             }
         } catch (_) {}
@@ -157,7 +168,7 @@ export const App = () => {
         
         // Page Access Guards
         const memberPages = ['dashboard', 'documents', 'calendar', 'account', 'admin'];
-        if (memberPages.includes(currentPage) && !userRole) {
+        if (memberPages.includes(currentPage) && !userRole && !(recoveryMode && currentPage === 'account')) {
             return React.createElement(LoginPage, {
                 theme: activeTheme,
                 onLogin: handleLogin,
@@ -233,7 +244,10 @@ export const App = () => {
                     user: user,
                     setUser: setUser,
                     showNotification: showNotification,
-                    onNavigate: navigate
+                    onNavigate: navigate,
+                    initialTab: accountInitialTab || undefined,
+                    restrictSecurityOnly: restrictSecurityOnly,
+                    recoveryMode: recoveryMode
                 });
             case 'admin':
                 return React.createElement(AdminPage, {
