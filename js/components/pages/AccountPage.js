@@ -371,7 +371,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                     className: "text-xl text-gray-600"
                 }, "Manage your profile and preferences")
             ]),
-            React.createElement('button', {
+            !restrictSecurityOnly && React.createElement('button', {
                 key: "back-btn",
                 onClick: () => onNavigate('dashboard'),
                 className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
