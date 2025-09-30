@@ -64,6 +64,45 @@ export const themeClasses = {
         gradient: 'bg-gradient-to-r from-purple-500 to-pink-600',
         cardBg: 'modern-card'
     },
+    ember: {
+        name: 'Sunrise Ember',
+        bg: 'bg-gradient-to-r from-red-500 to-orange-500',
+        hoverBg: 'hover:from-red-600 hover:to-orange-600',
+        text: 'text-red-600',
+        hoverText: 'hover:text-red-700',
+        border: 'focus:border-red-500',
+        ring: 'focus:ring-red-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-red-100 to-orange-200',
+        iconText: 'text-red-700',
+        gradient: 'bg-gradient-to-r from-red-500 to-orange-500',
+        cardBg: 'modern-card'
+    },
+    citrus: {
+        name: 'Citrus Glow',
+        bg: 'bg-gradient-to-r from-amber-500 to-yellow-500',
+        hoverBg: 'hover:from-amber-600 hover:to-yellow-600',
+        text: 'text-amber-600',
+        hoverText: 'hover:text-amber-700',
+        border: 'focus:border-amber-500',
+        ring: 'focus:ring-amber-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-amber-100 to-yellow-200',
+        iconText: 'text-amber-700',
+        gradient: 'bg-gradient-to-r from-amber-500 to-yellow-500',
+        cardBg: 'modern-card'
+    },
+    sunset: {
+        name: 'Golden Sunset',
+        bg: 'bg-gradient-to-r from-orange-500 to-amber-600',
+        hoverBg: 'hover:from-orange-600 hover:to-amber-700',
+        text: 'text-orange-600',
+        hoverText: 'hover:text-orange-700',
+        border: 'focus:border-orange-500',
+        ring: 'focus:ring-orange-500 focus:ring-opacity-30',
+        iconBg: 'bg-gradient-to-br from-orange-100 to-amber-200',
+        iconText: 'text-orange-700',
+        gradient: 'bg-gradient-to-r from-orange-500 to-amber-600',
+        cardBg: 'modern-card'
+    },
     red: {
         bg: 'bg-gradient-to-r from-red-500 to-rose-600',
         hoverBg: 'hover:from-red-600 hover:to-rose-700',
