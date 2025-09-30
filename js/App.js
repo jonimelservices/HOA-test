@@ -88,7 +88,8 @@ export const App = () => {
     useEffect(() => {
         try {
             const hash = window.location.hash || '';
-            if (hash.includes('type=recovery')) {
+            const path = window.location.pathname || '/';
+            if (hash.includes('type=recovery') || path === '/password-update') {
                 setCurrentPage('password-update');
             }
         } catch (_) {}
