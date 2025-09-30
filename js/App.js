@@ -8,6 +8,7 @@ import { LoginPage } from './components/pages/LoginPage.js';
 import { ResetPasswordPage } from './components/pages/ResetPasswordPage.js';
 import { DashboardPage } from './components/pages/DashboardPage.js';
 import { DocumentsPage } from './components/pages/DocumentsPage.js';
+import { PasswordUpdatePage } from './components/pages/PasswordUpdatePage.js';
 import { CalendarPage } from './components/pages/CalendarPage.js';
 import { AccountPage } from './components/pages/AccountPage.js';
 import { AdminPage } from './components/pages/AdminPage.js';
@@ -22,6 +23,9 @@ export const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
     const [userRole, setUserRole] = useState(null);
     const [user, setUser] = useState(null);
+    const [recoveryMode, setRecoveryMode] = useState(false);
+    const [accountInitialTab, setAccountInitialTab] = useState(null);
+    const [restrictSecurityOnly, setRestrictSecurityOnly] = useState(false);
     const [themeName, setThemeName] = useState('blue');
     const [config, setConfig] = useState(null);
     const [notification, setNotification] = useState('');
@@ -56,6 +60,13 @@ export const App = () => {
 
         const { data: authListener } = window.supabaseClient.auth.onAuthStateChange(
             async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    setRecoveryMode(true);
+                    setAccountInitialTab('security');
+                    setRestrictSecurityOnly(true);
+                    setCurrentPage('account');
+                    return;
+                }
                 if (session?.user) {
                     const { data: userData } = await window.supabaseClient
                         .from('users')
@@ -78,6 +89,21 @@ export const App = () => {
             authListener.subscription.unsubscribe();
             try { window.supabaseClient.removeChannel(cfgChannel); } catch (_) {}
         };
+    }, []);
+
+    useEffect(() => {
+        try {
+            const hash = window.location.hash || '';
+            const path = window.location.pathname || '/';
+            if (hash.includes('type=recovery')) {
+                setRecoveryMode(true);
+                setAccountInitialTab('security');
+                setRestrictSecurityOnly(true);
+                setCurrentPage('account');
+            } else if (path === '/password-update') {
+                setCurrentPage('password-update');
+            }
+        } catch (_) {}
     }, []);
 
     useEffect(() => {
@@ -142,7 +168,7 @@ export const App = () => {
         
         // Page Access Guards
         const memberPages = ['dashboard', 'documents', 'calendar', 'account', 'admin'];
-        if (memberPages.includes(currentPage) && !userRole) {
+        if (memberPages.includes(currentPage) && !userRole && !(recoveryMode && currentPage === 'account')) {
             return React.createElement(LoginPage, {
                 theme: activeTheme,
                 onLogin: handleLogin,
@@ -185,6 +211,12 @@ export const App = () => {
                     showNotification: showNotification,
                     onNavigate: navigate
                 });
+            case 'password-update':
+                return React.createElement(PasswordUpdatePage, {
+                    theme: activeTheme,
+                    showNotification: showNotification,
+                    onNavigate: navigate
+                });
             case 'dashboard':
                 return React.createElement(DashboardPage, {
                     theme: activeTheme,
@@ -212,7 +244,10 @@ export const App = () => {
                     user: user,
                     setUser: setUser,
                     showNotification: showNotification,
-                    onNavigate: navigate
+                    onNavigate: navigate,
+                    initialTab: accountInitialTab || undefined,
+                    restrictSecurityOnly: restrictSecurityOnly,
+                    recoveryMode: recoveryMode
                 });
             case 'admin':
                 return React.createElement(AdminPage, {
@@ -242,7 +277,7 @@ export const App = () => {
             message: notification,
             onDismiss: () => setNotification('')
         }),
-        !isLoading && config && React.createElement(Header, {
+        currentPage !== 'password-update' && !isLoading && config && React.createElement(Header, {
             key: "header",
             config: config,
             theme: activeTheme,
@@ -254,7 +289,7 @@ export const App = () => {
             key: "main",
             className: "flex-grow"
         }, renderPage()),
-        !isLoading && config && React.createElement(Footer, {
+        currentPage !== 'password-update' && !isLoading && config && React.createElement(Footer, {
             key: "footer",
             config: config
         }),

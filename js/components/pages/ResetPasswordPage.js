@@ -7,7 +7,7 @@ export const ResetPasswordPage = ({ theme, showNotification, onNavigate }) => {
     const handlePasswordReset = async () => {
         setIsLoading(true);
         const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin,
+            redirectTo: `${window.location.origin}/account#type=recovery`,
         });
         if (error) {
             showNotification("Error: " + error.message);

@@ -1,11 +1,11 @@
 import { ConfirmationModal } from '../ui/ConfirmationModal.js';
 const { useState } = React;
 
-export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate }) => {
+export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate, initialTab, restrictSecurityOnly, recoveryMode }) => {
     const [formData, setFormData] = useState(user || {});
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState(initialTab || 'profile');
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -60,7 +60,12 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                 setNewPassword('');
                 setConfirmPassword('');
                 setShowPasswordConfirm(true);
-                try { alert('Done'); } catch (_) {}
+                if (recoveryMode) {
+                    try { await window.supabaseClient.auth.signOut(); } catch (_) {}
+                    onNavigate('login');
+                } else {
+                    try { alert('Done'); } catch (_) {}
+                }
             }
         } catch (error) {
             showNotification("Error changing password.");
@@ -366,7 +371,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
                     className: "text-xl text-gray-600"
                 }, "Manage your profile and preferences")
             ]),
-            React.createElement('button', {
+            !restrictSecurityOnly && React.createElement('button', {
                 key: "back-btn",
                 onClick: () => onNavigate('dashboard'),
                 className: "modern-button px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1"
@@ -383,7 +388,7 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
             key: "content",
             className: "grid lg:grid-cols-4 gap-8"
         }, [
-            React.createElement('div', {
+            !restrictSecurityOnly && React.createElement('div', {
                 key: "sidebar",
                 className: "lg:col-span-1"
             }, React.createElement('div', {
@@ -410,13 +415,13 @@ export const AccountPage = ({ theme, user, setUser, showNotification, onNavigate
             ])),
             React.createElement('div', {
                 key: "main-content",
-                className: "lg:col-span-3"
+                className: restrictSecurityOnly ? "lg:col-span-4" : "lg:col-span-3"
             }, [
                 React.createElement('div', {
                     key: "tab-content",
                     className: "modern-card p-10"
                 }, renderTabContent()),
-                (activeTab === 'profile' || activeTab === 'notifications') && React.createElement('div', {
+                !restrictSecurityOnly && (activeTab === 'profile' || activeTab === 'notifications') && React.createElement('div', {
                     key: "save-section",
                     className: "mt-8 text-center"
                 }, React.createElement('button', {
