@@ -274,7 +274,7 @@ export const App = () => {
             key: "main",
             className: "flex-grow"
         }, renderPage()),
-        !isLoading && config && React.createElement(Footer, {
+        currentPage !== 'password-update' && !isLoading && config && React.createElement(Footer, {
             key: "footer",
             config: config
         }),
