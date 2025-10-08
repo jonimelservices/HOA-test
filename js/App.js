@@ -151,7 +151,19 @@ export const App = () => {
 
     const handleLogout = async () => {
         setIsLoading(true);
-        await window.supabaseClient.auth.signOut();
+        try {
+            await window.supabaseClient.auth.signOut();
+        } catch (error) {
+            const tokenMessage = typeof error?.message === 'string' ? error.message : '';
+            if (error?.name === 'AuthApiError' && tokenMessage.includes('Refresh Token Not Found')) {
+                console.warn('Supabase session already expired during sign out. Proceeding with local cleanup.');
+            } else {
+                console.error('Unexpected error during sign out:', error);
+                showNotification('We could not complete the sign out. Please try again.');
+                setIsLoading(false);
+                return;
+            }
+        }
         setUser(null);
         setUserRole(null);
         setCurrentPage('home');
