@@ -17,7 +17,7 @@ import { themeClasses, initialHoaConfig } from './utils/themes.js';
 
 const { useState, useEffect } = React;
 
-const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
+const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 export const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
@@ -118,7 +118,7 @@ export const App = () => {
         const resetTimer = () => {
             if (idleTimer) clearTimeout(idleTimer);
             idleTimer = setTimeout(async () => {
-                try { showNotification('You were logged out due to 3 minutes of inactivity.'); } catch (_) {}
+                try { showNotification('You were logged out after 5 minutes of inactivity.'); } catch (_) {}
                 await handleLogout();
             }, IDLE_TIMEOUT_MS);
         };
